@@ -13,10 +13,11 @@ void CPU::Context::save() volatile
     ASM("       csrr     x3,  sscratch          \n"     // sscratch = usp (sscratch holds ksp in user-land and usp in kernel; usp = 0 for kernel threads)
         "       sw       x3,    0(a0)           \n"     // push usp
         "       sw       x1,    4(a0)           \n");   // push lr as pc
-if(multitask)
-    ASM("       csrr     x3,  sstatus           \n");
-else
-    ASM("       csrr     x3,  mstatus           \n");
+    
+    if(multitask)
+        ASM("       csrr     x3,  sstatus           \n");
+    else
+        ASM("       csrr     x3,  mstatus           \n");
 
     ASM("       sw       x3,    8(a0)           \n"     // push st
         "       sw       x1,   12(a0)           \n"     // push ra
