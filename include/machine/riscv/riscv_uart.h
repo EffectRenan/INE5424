@@ -67,15 +67,21 @@ public:
 
         reg(DIV) = ((div_most << 8) | div_least);
 
+        // Buffer for dequeuing
+        _buffer = 0;
     }
 
-    Reg8 rxd() { return (reg(RXDATA) & 0xFF); }
+    void buffer(unsigned int uart_register) {
+        _buffer = reg(uart_register);
+    }
+
+    Reg8 rxd() { return (_buffer & 0xFF); }
 
     void txd(Reg8 c) { reg(TXDATA) = c; }
 
-    bool rxd_empty() { return (reg(RXDATA) >> 31); }
+    bool rxd_empty() { buffer(RXDATA); return (_buffer >> 31); }
     
-    bool txd_full() { return (reg(TXDATA) >> 31); }
+    bool txd_full() { buffer(TXDATA); return (_buffer >> 31); }
 
     bool busy() { return false; /* not applicable */ }
 
@@ -112,6 +118,8 @@ private:
     static volatile CPU::Reg32 & reg(unsigned int uart_register) { 
         return reinterpret_cast<volatile CPU::Reg32 *>(Memory_Map::UART_BASE)[uart_register / sizeof(CPU::Reg32)];
     }
+
+    Reg32 _buffer;
 };
 
 __END_SYS

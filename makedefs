@@ -327,7 +327,6 @@ TEE		:= tee
 ifndef DISPLAY
 TERM		:= sh -c
 else
-# TERM		:= tilix -e
 TERM		:= konsole -e
 endif
 

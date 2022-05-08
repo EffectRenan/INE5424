@@ -1,16 +1,43 @@
-#include <utility/ostream.h>
-#include <time.h>
+// EPOS PC UART Mediator Test Program
+
+#include <utility/string.h>
+#include <machine/riscv/riscv_uart.h>
 
 using namespace EPOS;
+    
+UART uart(0, 0, 0, 0);
 
-OStream cout;
+void print(char *text);
+char get(char &pressed);
 
 int main()
 {
-    for (int count = 0; count < 100000; count++) {
-        cout << "Hello world! | " << count << endl;
-        // Delay thinking(1000000);
-    }
+
+    char text[] = "Press a button\n";
+    print(text);
+
+    char pressed = 0;
+    while(!get(pressed));
+
+    strcpy(text, "Pressed: ");
+    print(text);
+
+    uart.put(pressed);
+
+    strcpy(text, "\nDone!\n");
+    print(text);
 
     return 0;
+}
+
+void print(char *text)
+{
+    for (int i = 0; i < (int) strlen(text); i++)
+        uart.put(text[i]);
+}
+
+char get(char &pressed)
+{
+    pressed = uart.get();
+    return pressed;
 }
