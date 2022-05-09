@@ -105,7 +105,6 @@ public:
 
     void int_disable(bool receive = true, bool transmit = true, bool line = true, bool modem = true) {
         reg(IE) = 0;
-        reg(IP) = 0;
     }
 
     void loopback(bool flag) {}
