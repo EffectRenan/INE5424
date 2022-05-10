@@ -50,11 +50,11 @@ public:
     void config(unsigned int baud_rate, unsigned int data_bits, unsigned int parity, unsigned int stop_bits) {
         
         // Activating channels
-        reg(TXCTRL) |= 0b1;
+        reg(TXCTRL) |= (0b010 << 15) | 0b1;
         reg(RXCTRL) |= 0b1;
 
-        // No interruptions
-        int_disable();
+        // Enabling txwm
+        int_enable();
 
         Reg32 br = Traits<UART>::CLOCK / (BAUD_RATE);
         if (Traits<UART>::CLOCK / br > BAUD_RATE) {
@@ -95,12 +95,14 @@ public:
         txd(c);
     }
 
-    void flush() {}
+    void flush() { while(!(reg(IP) & 0b1)); }
+
     bool ready_to_get() { return !rxd_empty(); }
+
     bool ready_to_put() { return !txd_full(); }
 
     void int_enable(bool receive = true, bool transmit = true, bool line = true, bool modem = true) {
-        int_disable();
+        reg(IE) = 0b01;
     }
 
     void int_disable(bool receive = true, bool transmit = true, bool line = true, bool modem = true) {

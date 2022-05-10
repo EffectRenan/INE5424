@@ -23,6 +23,8 @@ int main()
     print(text);
 
     uart.put(pressed);
+    
+    uart.flush();
 
     strcpy(text, "\nDone!\n");
     print(text);
