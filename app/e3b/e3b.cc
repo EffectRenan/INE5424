@@ -34,8 +34,7 @@ int main()
 
 void print(char *text)
 {
-    for (int i = 0; i < (int) strlen(text); i++)
-        uart.put(text[i]);
+    uart.write(text, (unsigned int) strlen(text));
 }
 
 char get(char &pressed)

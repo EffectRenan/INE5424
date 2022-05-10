@@ -71,6 +71,10 @@ public:
         _buffer = 0;
     }
 
+    void config(unsigned int * baud_rate, unsigned int * data_bits, unsigned int * parity, unsigned int * stop_bits) {
+        *baud_rate = Traits<UART>::CLOCK / (reg(DIV) & 0xFFFF);
+    }
+
     void buffer(unsigned int uart_register) {
         _buffer = reg(uart_register);
     }
@@ -93,6 +97,20 @@ public:
     void put(char c) { 
         while(txd_full()); 
         txd(c);
+    }
+
+    int read(char * data, unsigned int max_size) {
+        for (unsigned int i = 0; i < max_size; i++)
+            data[i] = get();
+
+        return max_size;
+    }
+
+    int write(const char * data, unsigned int size) {
+        for (unsigned int i = 0; i < size; i++)
+            put(data[i]);
+        
+        return size;
     }
 
     void flush() { while(!(reg(IP) & 0b1)); }
