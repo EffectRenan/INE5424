@@ -14,7 +14,7 @@ private:
     static const bool multitask = Traits<System>::multitask;
 
 public:
-    enum : unsigned long {
+    enum {
         NOT_USED        = Traits<Machine>::NOT_USED,
 
         // Physical Memory
@@ -24,25 +24,15 @@ public:
         MIO_TOP         = Traits<Machine>::MIO_TOP,
         INT_M2S         = RAM_TOP + 1 - 4096,   // the last page is used by the _int_m2s() interrupt forwarder installed by SETUP
         BOOT_STACK      = INT_M2S - Traits<Build>::CPUS * Traits<Machine>::STACK_SIZE, // will be used as the stack's base, not the stack pointer
-        FREE_BASE       = RAM_BASE,
         FREE_TOP        = BOOT_STACK,
 
         // Memory-mapped devices
-        // TEST_BASE       = 0x00100000, // SiFive test engine
-        // RTC_BASE        = 0x00101000, // Goldfish RTC
-        // UART_BASE       = 0x10000000, // NS16550A UART
-        // CLINT_BASE      = 0x02000000, // SiFive CLINT
-        // TIMER_BASE      = 0x02004000, // CLINT Timer
-        // PLIIC_CPU_BASE  = 0x0c000000, // SiFive PLIC
-
-        // EDITED
         TEST_BASE       = 0x00100000, // SiFive test engine
         RTC_BASE        = 0x00101000, // Goldfish RTC
-        UART_BASE       = 0x10010000, // NS16550A UART
+        UART_BASE       = 0x10010000,
         CLINT_BASE      = 0x02000000, // SiFive CLINT
         TIMER_BASE      = 0x02004000, // CLINT Timer
         PLIIC_CPU_BASE  = 0x0c000000, // SiFive PLIC
-
 
         // Physical Memory at Boot
         BOOT            = Traits<Machine>::BOOT,

@@ -44,7 +44,7 @@ public:
     static const unsigned int SYS               = 0xff800000;                           // 4 GB - 8 MB
 
     // Default Sizes and Quantities
-    static const unsigned int STACK_SIZE        = 64 * 1024;
+    static const unsigned int STACK_SIZE        = 16 * 1024;
     static const unsigned int MAX_THREADS       = 16;
     static const unsigned int HEAP_SIZE         = (MAX_THREADS + CPUS) * STACK_SIZE;    // threads (including idles for each CPU) are the largest objects allocated from the heap
 };
