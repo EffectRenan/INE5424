@@ -24,6 +24,25 @@ private:
     static Heap * _heap;
 };
 
+class Flash
+{
+    friend class Init_Flash;
+    friend void * ::malloc(size_t);
+    friend void ::free(void *);
+
+    friend void * ::operator new(size_t, const EPOS::Flash_Allocator &);	// for _heap
+    friend void * ::operator new[](size_t, const EPOS::Flash_Allocator &);	// for _heap
+    friend void ::operator delete(void *);					                // for _heap
+    friend void ::operator delete[](void *);					            // for _heap
+
+private:
+    static void init();
+
+private:
+    static char _preheap[sizeof(Heap)];
+    static Heap * _heap;
+};
+
 class System
 {
     friend class Init_System;                                                   // for _heap
@@ -92,6 +111,14 @@ inline void * operator new(size_t bytes, const EPOS::System_Allocator & allocato
 
 inline void * operator new[](size_t bytes, const EPOS::System_Allocator & allocator) {
     return _SYS::System::_heap->alloc(bytes);
+}
+
+inline void * operator new(size_t bytes, const EPOS::Flash_Allocator & allocator) {
+    return _SYS::Flash::_heap->alloc(bytes);
+}
+
+inline void * operator new[](size_t bytes, const EPOS::Flash_Allocator & allocator) {
+    return _SYS::Flash::_heap->alloc(bytes);
 }
 
 // Delete cannot be declared inline due to virtual destructors
