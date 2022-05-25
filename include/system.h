@@ -27,13 +27,13 @@ private:
 class Flash
 {
     friend class Init_Flash;
-    friend void * ::malloc(size_t);
-    friend void ::free(void *);
+    friend void * ::malloc(size_t, const EPOS::Flash_Allocator &);
+    friend void ::free(void *, const EPOS::Flash_Allocator &);
 
-    friend void * ::operator new(size_t, const EPOS::Flash_Allocator &);	// for _heap
-    friend void * ::operator new[](size_t, const EPOS::Flash_Allocator &);	// for _heap
-    friend void ::operator delete(void *);					                // for _heap
-    friend void ::operator delete[](void *);					            // for _heap
+    friend void * ::operator new(size_t, const EPOS::Flash_Allocator &);
+    friend void * ::operator new[](size_t, const EPOS::Flash_Allocator &);
+    friend void ::operator delete(void *);
+    friend void ::operator delete[](void *);
 
 private:
     static void init();
@@ -80,7 +80,7 @@ extern "C"
         else
             return System::_heap->alloc(bytes);
     }
-
+    
     inline void * calloc(size_t n, unsigned int bytes) {
         void * ptr = malloc(n * bytes);
         memset(ptr, 0, n * bytes);
@@ -94,6 +94,16 @@ extern "C"
         else
             Heap::untyped_free(System::_heap, ptr);
     }
+}
+
+inline void * malloc(size_t bytes, const EPOS::Flash_Allocator & flash) {
+    __USING_SYS;
+    return Flash::_heap->alloc(bytes);
+}
+
+inline void free(void * ptr, const EPOS::Flash_Allocator & flash) {
+    __USING_SYS;
+    Heap::untyped_free(Flash::_heap, ptr);
 }
 
 // C++ dynamic memory allocators and deallocators
@@ -126,5 +136,11 @@ void operator delete(void * ptr);
 void operator delete[](void * ptr);
 void operator delete(void * ptr, size_t bytes);
 void operator delete[](void * ptr, size_t bytes);
+
+
+void operator delete(void *, const EPOS::Flash_Allocator &);
+void operator delete[](void * ptr, const EPOS::Flash_Allocator &);
+void operator delete(void * ptr, size_t bytes, const EPOS::Flash_Allocator &);
+void operator delete[](void * ptr, size_t bytes, const EPOS::Flash_Allocator &);
 
 #endif

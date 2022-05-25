@@ -45,14 +45,19 @@ inline void * operator new[](size_t s, void * a) { return a; }
 void * operator new(size_t, const EPOS::System_Allocator &);
 void * operator new[](size_t, const EPOS::System_Allocator &);
 
-void * operator new(size_t, const EPOS::Flash_Allocator &);
-void * operator new[](size_t, const EPOS::Flash_Allocator &);
-
 void * operator new(size_t, const EPOS::Scratchpad_Allocator &);
 void * operator new[](size_t, const EPOS::Scratchpad_Allocator &);
 
 void * operator new(size_t, const EPOS::Color &);
 void * operator new[](size_t, const EPOS::Color &);
+
+// Flash
+
+void * malloc(size_t, const EPOS::Flash_Allocator &);
+void free(void *, const EPOS::Flash_Allocator &);
+
+void * operator new(size_t, const EPOS::Flash_Allocator &);
+void * operator new[](size_t, const EPOS::Flash_Allocator &);
 
 // Utilities
 __BEGIN_UTIL
