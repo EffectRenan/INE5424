@@ -10,7 +10,7 @@ unsigned int CPU::_bus_clock;
 
 void CPU::Context::save() volatile
 {
-    ASM("       csrr     x3,  sscratch          \n"     // sscratch = usp (sscratch holds ksp in user-land and usp in kernel; usp = 0 for kernel threads)
+    ASM("       csrr     x3,  mscratch          \n"     // mscratch = usp (mscratch holds ksp in user-land and usp in kernel; usp = 0 for kernel threads)
         "       sw       x3,    0(a0)           \n"     // push usp
         "       sw       x1,    4(a0)           \n");   // push lr as pc
     
