@@ -24,6 +24,25 @@ private:
     static Heap * _heap;
 };
 
+class Flash
+{
+    friend class Init_Flash;
+    friend void * ::malloc(size_t, const EPOS::Flash_Allocator &);
+    friend void ::free(void *, const EPOS::Flash_Allocator &);
+
+    friend void * ::operator new(size_t, const EPOS::Flash_Allocator &);
+    friend void * ::operator new[](size_t, const EPOS::Flash_Allocator &);
+    friend void ::operator delete(void *);
+    friend void ::operator delete[](void *);
+
+private:
+    static void init();
+
+private:
+    static char _preheap[sizeof(Heap)];
+    static Heap * _heap;
+};
+
 class System
 {
     friend class Init_System;                                                   // for _heap
@@ -61,7 +80,7 @@ extern "C"
         else
             return System::_heap->alloc(bytes);
     }
-
+    
     inline void * calloc(size_t n, unsigned int bytes) {
         void * ptr = malloc(n * bytes);
         memset(ptr, 0, n * bytes);
@@ -75,6 +94,16 @@ extern "C"
         else
             Heap::untyped_free(System::_heap, ptr);
     }
+}
+
+inline void * malloc(size_t bytes, const EPOS::Flash_Allocator & flash) {
+    __USING_SYS;
+    return Flash::_heap->alloc(bytes);
+}
+
+inline void free(void * ptr, const EPOS::Flash_Allocator & flash) {
+    __USING_SYS;
+    Heap::untyped_free(Flash::_heap, ptr);
 }
 
 // C++ dynamic memory allocators and deallocators
@@ -94,10 +123,24 @@ inline void * operator new[](size_t bytes, const EPOS::System_Allocator & alloca
     return _SYS::System::_heap->alloc(bytes);
 }
 
+inline void * operator new(size_t bytes, const EPOS::Flash_Allocator & allocator) {
+    return _SYS::Flash::_heap->alloc(bytes);
+}
+
+inline void * operator new[](size_t bytes, const EPOS::Flash_Allocator & allocator) {
+    return _SYS::Flash::_heap->alloc(bytes);
+}
+
 // Delete cannot be declared inline due to virtual destructors
 void operator delete(void * ptr);
 void operator delete[](void * ptr);
 void operator delete(void * ptr, size_t bytes);
 void operator delete[](void * ptr, size_t bytes);
+
+
+void operator delete(void *, const EPOS::Flash_Allocator &);
+void operator delete[](void * ptr, const EPOS::Flash_Allocator &);
+void operator delete(void * ptr, size_t bytes, const EPOS::Flash_Allocator &);
+void operator delete[](void * ptr, size_t bytes, const EPOS::Flash_Allocator &);
 
 #endif
