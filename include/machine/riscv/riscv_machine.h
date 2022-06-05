@@ -19,9 +19,6 @@ class Machine: private Machine_Common
     friend class Init_Begin;
     friend class Init_System;
 
-private:
-    static const bool smp = Traits<System>::multicore;
-
 public:
     Machine() {}
 
@@ -29,27 +26,12 @@ public:
     using Machine_Common::clear_bss;
 
     static void panic();
-
-    static void reboot()
-    {
-        if(Traits<System>::reboot) {
-            db<Machine>(WRN) << "Machine::reboot()" << endl;
-            while(true);
-        } else {
-            poweroff();
-        }
-    }
-
-    static void poweroff()
-    {
-        db<Machine>(WRN) << "Machine::poweroff()" << endl;
-        while(true);
-    }
+    static void reboot();
+    static void poweroff();
 
     static const UUID & uuid() { return System::info()->bm.uuid; }
 
 private:
-    static void smp_barrier_init(unsigned int n_cpus);
     static void pre_init(System_Info * si);
     static void init();
 };
