@@ -57,7 +57,7 @@ private:
 
 Setup::Setup()
 {
-    CPU::int_disable(); // interrupts will be re-enabled at init_end
+    // CPU::int_disable(); // interrupts will be re-enabled at init_end
 
     Display::init();
 
@@ -150,11 +150,13 @@ void _entry() // machine mode
             CPU::halt();
 
     CPU::mstatusc(CPU::MIE);                            // disable interrupts
-    CPU::mies(CPU::MSI | CPU::MTI | CPU::MEI);          // enable interrupts at CLINT so IPI and timer can be triggered
-    CLINT::mtvec(CLINT::DIRECT, _int_entry);            // setup a preliminary machine mode interrupt handler pointing it to _int_entry
+
+    // CPU::mies(CPU::MSI | CPU::MTI | CPU::MEI);          // enable interrupts at CLINT so IPI and timer can be triggered
+    // CLINT::mtvec(CLINT::DIRECT, _int_entry);            // setup a preliminary machine mode interrupt handler pointing it to _int_entry
 
     CPU::sp(Memory_Map::BOOT_STACK + Traits<Machine>::STACK_SIZE * (CPU::id() + 1) - sizeof(long)); // set this hart stack (the first stack is reserved for _int_m2s)
 
+    // CPU::mstatus(CPU::MPP_M | CPU::MPIE);               // stay in machine mode and reenable interrupts at mret
     CPU::mstatus(CPU::MPP_M | CPU::MPIE);               // stay in machine mode and reenable interrupts at mret
 
     CPU::mepc(CPU::Reg(&_setup));                       // entry = _setup
@@ -163,7 +165,7 @@ void _entry() // machine mode
 
 void _setup() // supervisor mode
 {
-    CPU::mie(CPU::MSI);                                 // enable MSI at CLINT so IPI can be triggered
+    // CPU::mie(CPU::MSI);                                 // enable MSI at CLINT so IPI can be triggered
 
     Machine::clear_bss();
 

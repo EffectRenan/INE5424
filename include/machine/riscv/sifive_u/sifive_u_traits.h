@@ -26,7 +26,7 @@ public:
 
     // Physical Memory
     static const unsigned int RAM_BASE          = 0x80000000;                           // 2 GB
-    static const unsigned int RAM_TOP           = 0x87ffff0b;                           // 2 GB + 128 MB (max 1536 MB of RAM => RAM + MIO < 2 G)
+    static const unsigned int RAM_TOP           = 0x87ffff07;                           // 2 GB + 128 MB (max 1536 MB of RAM => RAM + MIO < 2 G)
     static const unsigned int MIO_BASE          = 0x00000000;
     static const unsigned int MIO_TOP           = 0x1fffffff;                           // 512 MB (max 512 MB of MIO => RAM + MIO < 2 G)
 
@@ -50,7 +50,7 @@ public:
     // Default Sizes and Quantities
     static const unsigned int STACK_SIZE        = 64 * 1024;
     static const unsigned int MAX_THREADS       = 16;
-    static const unsigned int HEAP_SIZE         = (MAX_THREADS + CPUS) * STACK_SIZE;    // threads (including idles for each CPU) are the largest objects allocated from the heap
+    static const unsigned int HEAP_SIZE         = 1 * 1024 * 1024; //(MAX_THREADS + CPUS) * STACK_SIZE;    // threads (including idles for each CPU) are the largest objects allocated from the heap
 };
 
 template <> struct Traits<IC>: public Traits<Machine_Common>
