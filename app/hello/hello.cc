@@ -1,5 +1,4 @@
 #include <utility/ostream.h>
-#include <time.h>
 
 using namespace EPOS;
 
