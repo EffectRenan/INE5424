@@ -336,19 +336,18 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         next->_state = RUNNING;
 
         db<Thread>(TRC) << "Thread::dispatch(prev=" << prev << ",next=" << next << ")" << endl;
-        if(Traits<Thread>::debugged) {
+        if(Traits<Thread>::debugged && Traits<Debug>::trace) {
             CPU::Context tmp;
             tmp.save();
             db<Thread>(INF) << "Thread::dispatch:prev={" << prev << ",ctx=" << tmp << "}" << endl;
         }
-        db<Thread>(INF) << "Thread::dispatch:next={" << next << ",ctx=" << *next->_context << "}" << endl;
-
         // The non-volatile pointer to volatile pointer to a non-volatile context is correct
         // and necessary because of context switches, but here, we are locked() and
         // passing the volatile to switch_constext forces it to push prev onto the stack,
         // disrupting the context (it doesn't make a difference for Intel, which already saves
         // parameters on the stack anyway).
         CPU::switch_context(const_cast<Context **>(&prev->_context), next->_context);
+        ASM("add zero, zero, zero");
     }
 }
 

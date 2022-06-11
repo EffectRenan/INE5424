@@ -14,8 +14,8 @@ class RV64_PMU: public PMU_Common
 {
 
 private:
-    typedef CPU::Reg32 Reg32;
     typedef CPU::Reg8 Reg8;
+    typedef CPU::Reg64 Reg64;
 
 protected:
     static const unsigned int CHANNELS = 29;
@@ -204,8 +204,8 @@ public:
         write(channel, 0);
     }
 
-    static Reg32 minstret() {
-        Reg32 reg = 0;
+    static Reg64 minstret() {
+        Reg64 reg = 0;
         
         ASM(R"(
             csrr    %0, minstret
@@ -214,18 +214,8 @@ public:
         return reg;
     }
 
-    static Reg32 minstreth() {
-        Reg32 reg = 0;
-        
-        ASM(R"(
-            csrr    %0, minstreth
-        )": "=r"(reg));
-
-        return reg;
-    }
-
-    static Reg32 mcycle() {
-        Reg32 reg = 0;
+    static Reg64 mcycle() {
+        Reg64 reg = 0;
         
         ASM(R"(
             csrr    %0, mcycle
@@ -234,21 +224,11 @@ public:
         return reg;
     }
     
-    static Reg32 mcycleh() {
-        Reg32 reg = 0;
-        
-        ASM(R"(
-            csrr    %0, mcycleh
-        )": "=r"(reg));
-
-        return reg;
-    }    
-
     static void init();
 
 private:
 
-    static void mhpmevent(Channel channel, Reg32 value) {
+    static void mhpmevent(Channel channel, Reg64 value) {
         // HPM includes 29 channels mhpmevent3–mhpmevent31
 
         switch (channel) {
@@ -571,9 +551,7 @@ public:
     using Engine::reset;
     
     using Engine::mcycle;
-    using Engine::mcycleh;
     using Engine::minstret;
-    using Engine::minstreth;
 
 private:
     static void init() { Engine::init(); }

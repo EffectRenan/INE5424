@@ -58,7 +58,9 @@ public:
 
     Tick read() { return _current; }
 
-    static void reset() { config(FREQUENCY); }
+    static void reset() { 
+        config(FREQUENCY); 
+    }
 
     static void enable() {}
     static void disable() {}

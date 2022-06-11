@@ -14,8 +14,9 @@ class RV32_PMU: public PMU_Common
 {
 
 private:
-    typedef CPU::Reg32 Reg32;
     typedef CPU::Reg8 Reg8;
+    typedef CPU::Reg32 Reg32;
+    typedef CPU::Reg64 Reg64;
 
 protected:
     static const unsigned int CHANNELS = 29;
@@ -151,7 +152,9 @@ public:
     enum {
         EVENT_CLASS = 0xFF,
         MIN_CHANNEL     = 3,
-        MAX_CHANNEL     = 31
+        MAX_CHANNEL     = 31,
+        MHPMCOUNTER_H   = 32,
+        MHPMCOUNTER_L   = 0xFFFFFFFF,
     };
     
     static void config(Channel channel, Event event, Flags flags = NONE) {
@@ -204,18 +207,18 @@ public:
         write(channel, 0);
     }
 
-    static Reg32 minstret() {
+    static Reg64 minstret() {
         Reg32 reg = 0;
         
         ASM(R"(
             csrr    %0, minstret
         )": "=r"(reg));
 
-        return reg;
+        return (minstreth() << MHPMCOUNTER_H) or reg;
     }
 
-    static Reg32 minstreth() {
-        Reg32 reg = 0;
+    static Reg64 minstreth() {
+        Reg64 reg = 0;
         
         ASM(R"(
             csrr    %0, minstreth
@@ -224,18 +227,18 @@ public:
         return reg;
     }
 
-    static Reg32 mcycle() {
+    static Reg64 mcycle() {
         Reg32 reg = 0;
         
         ASM(R"(
             csrr    %0, mcycle
         )": "=r"(reg));
 
-        return reg;
+        return (mcycleh() << MHPMCOUNTER_H) or reg;
     }
     
-    static Reg32 mcycleh() {
-        Reg32 reg = 0;
+    static Reg64 mcycleh() {
+        Reg64 reg = 0;
         
         ASM(R"(
             csrr    %0, mcycleh
@@ -248,7 +251,7 @@ public:
 
 private:
 
-    static void mhpmevent(Channel channel, Reg32 value) {
+    static void mhpmevent(Channel channel, Reg64 value) {
         // HPM includes 29 channels mhpmevent3–mhpmevent31
 
         switch (channel) {
@@ -349,91 +352,120 @@ private:
         
         switch (channel) {
             case MHPMCOUNTER3:
-                ASM(R"(csrw    mhpmcounter3, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter3, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter3h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER4:
-                ASM(R"(csrw    mhpmcounter4, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter4, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter4h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER5:
-                ASM(R"(csrw    mhpmcounter5, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter5, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter5h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER6:
-                ASM(R"(csrw    mhpmcounter6, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter6, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter6h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER7:
-                ASM(R"(csrw    mhpmcounter7, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter7, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter7h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER8:
-                ASM(R"(csrw    mhpmcounter8, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter8, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter8h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER9:
-                ASM(R"(csrw    mhpmcounter9, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter9, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter9h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER10:
-                ASM(R"(csrw    mhpmcounter10, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter10, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter10h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER11:
-                ASM(R"(csrw    mhpmcounter11, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter11, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter11h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER12:
-                ASM(R"(csrw    mhpmcounter12, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter12, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter12h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER13:
-                ASM(R"(csrw    mhpmcounter13, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter13, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter13h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER14:
-                ASM(R"(csrw    mhpmcounter14, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter14, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter14h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER15:
-                ASM(R"(csrw    mhpmcounter15, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter15, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter15h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER16:
-                ASM(R"(csrw    mhpmcounter16, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter16, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter16h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER17:
-                ASM(R"(csrw    mhpmcounter17, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter17, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter17h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER18:
-                ASM(R"(csrw    mhpmcounter18, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter18, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter18h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER19:
-                ASM(R"(csrw    mhpmcounter19, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter19, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter19h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER20:
-                ASM(R"(csrw    mhpmcounter20, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter20, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter20h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER21:
-                ASM(R"(csrw    mhpmcounter21, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter21, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter21h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER22:
-                ASM(R"(csrw    mhpmcounter22, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter22, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter22h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER23:
-                ASM(R"(csrw    mhpmcounter23, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter23, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter23h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER24:
-                ASM(R"(csrw    mhpmcounter24, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter24, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter24h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER25:
-                ASM(R"(csrw    mhpmcounter25, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter25, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter25h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER26:
-                ASM(R"(csrw    mhpmcounter26, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter26, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter26h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER27:
-                ASM(R"(csrw    mhpmcounter27, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter27, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter27h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER28:
-                ASM(R"(csrw    mhpmcounter28, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter28, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter28h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER29:
-                ASM(R"(csrw    mhpmcounter29, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter29, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter29h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER30:
-                ASM(R"(csrw    mhpmcounter30, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter30, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter30h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
             case MHPMCOUNTER31:
-                ASM(R"(csrw    mhpmcounter31, %0)": : "r"(value));
+                ASM(R"(csrw    mhpmcounter31, %0)": : "r"(value & MHPMCOUNTER_L));
+                ASM(R"(csrw    mhpmcounter31h, %0)": : "r"(value >> MHPMCOUNTER_H));
                 break;
         }
     }
@@ -447,90 +479,148 @@ private:
         
         switch (channel) {
             case MHPMCOUNTER3:
+                ASM(R"(csrr   %0, mhpmcounter3h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter3)": "=r"(value));
                 break;
             case MHPMCOUNTER4:
+                ASM(R"(csrr   %0, mhpmcounter4h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter4)": "=r"(value));
                 break;
             case MHPMCOUNTER5:
+                ASM(R"(csrr   %0, mhpmcounter5h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter5)": "=r"(value));
                 break;
             case MHPMCOUNTER6:
+                ASM(R"(csrr   %0, mhpmcounter6h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter6)": "=r"(value));
                 break;
             case MHPMCOUNTER7:
+                ASM(R"(csrr   %0, mhpmcounter7h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter7)": "=r"(value));
                 break;
             case MHPMCOUNTER8:
+                ASM(R"(csrr   %0, mhpmcounter8h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter8)": "=r"(value));
                 break;
             case MHPMCOUNTER9:
+                ASM(R"(csrr   %0, mhpmcounter9h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter9)": "=r"(value));
                 break;
             case MHPMCOUNTER10:
+                ASM(R"(csrr   %0, mhpmcounter10h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter10)": "=r"(value));
                 break;
             case MHPMCOUNTER11:
+                ASM(R"(csrr   %0, mhpmcounter11h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter11)": "=r"(value));
                 break;
             case MHPMCOUNTER12:
+                ASM(R"(csrr   %0, mhpmcounter12h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter12)": "=r"(value));
                 break;
             case MHPMCOUNTER13:
+                ASM(R"(csrr   %0, mhpmcounter13h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter13)": "=r"(value));
                 break;
             case MHPMCOUNTER14:
+                ASM(R"(csrr   %0, mhpmcounter14h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter14)": "=r"(value));
                 break;
             case MHPMCOUNTER15:
+                ASM(R"(csrr   %0, mhpmcounter15h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter15)": "=r"(value));
                 break;
             case MHPMCOUNTER16:
+                ASM(R"(csrr   %0, mhpmcounter16h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter16)": "=r"(value));
                 break;
             case MHPMCOUNTER17:
+                ASM(R"(csrr   %0, mhpmcounter17h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter17)": "=r"(value));
                 break;
             case MHPMCOUNTER18:
+                ASM(R"(csrr   %0, mhpmcounter18h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter18)": "=r"(value));
                 break;
             case MHPMCOUNTER19:
+                ASM(R"(csrr   %0, mhpmcounter19h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter19)": "=r"(value));
                 break;
             case MHPMCOUNTER20:
+                ASM(R"(csrr   %0, mhpmcounter20h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter20)": "=r"(value));
                 break;
             case MHPMCOUNTER21:
+                ASM(R"(csrr   %0, mhpmcounter21h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter21)": "=r"(value));
                 break;
             case MHPMCOUNTER22:
+                ASM(R"(csrr   %0, mhpmcounter22h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter22)": "=r"(value));
                 break;
             case MHPMCOUNTER23:
+                ASM(R"(csrr   %0, mhpmcounter23h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter23)": "=r"(value));
                 break;
             case MHPMCOUNTER24:
+                ASM(R"(csrr   %0, mhpmcounter24h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter24)": "=r"(value));
                 break;
             case MHPMCOUNTER25:
+                ASM(R"(csrr   %0, mhpmcounter25h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter25)": "=r"(value));
                 break;
             case MHPMCOUNTER26:
+                ASM(R"(csrr   %0, mhpmcounter26h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter26)": "=r"(value));
                 break;
             case MHPMCOUNTER27:
+                ASM(R"(csrr   %0, mhpmcounter27h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter27)": "=r"(value));
                 break;
             case MHPMCOUNTER28:
+                ASM(R"(csrr   %0, mhpmcounter28h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter28)": "=r"(value));
                 break;
             case MHPMCOUNTER29:
+                ASM(R"(csrr   %0, mhpmcounter29h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter29)": "=r"(value));
                 break;
             case MHPMCOUNTER30:
+                ASM(R"(csrr   %0, mhpmcounter30h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter30)": "=r"(value));
                 break;
             case MHPMCOUNTER31:
+                ASM(R"(csrr   %0, mhpmcounter3h)": "=r"(value));
+                value = value << MHPMCOUNTER_H;
                 ASM(R"(csrr   %0, mhpmcounter31)": "=r"(value));
                 break;
         }
@@ -571,9 +661,7 @@ public:
     using Engine::reset;
     
     using Engine::mcycle;
-    using Engine::mcycleh;
     using Engine::minstret;
-    using Engine::minstreth;
 
 private:
     static void init() { Engine::init(); }

@@ -36,13 +36,17 @@ void IC::entry()
 void IC::dispatch()
 {
     Interrupt_Id id = int_id();
+    // db<Init, IC>(WRN) << "ENTRY !! " << id << " | " << INT_SYS_TIMER << " | " << (id == INT_SYS_TIMER) << endl;
+    // db<Init, IC>(WRN) << "ENTRY !! " << id << " | " << INT_SYS_TIMER << " | " << endl;
 
     if((id != INT_SYS_TIMER) || Traits<IC>::hysterically_debugged)
         db<IC>(TRC) << "IC::dispatch(i=" << id << ")" << endl;
 
     // MIP.MTI is a direct logic on (MTIME == MTIMECMP) and reseting the Timer seems to be the only way to clear it
-    if(id == INT_SYS_TIMER)
+    if(id == INT_SYS_TIMER) {
+        // db<Init, IC>(WRN) << "Timer reset" << endl;
         Timer::reset();
+    }
 
     _int_vector[id](id);
 

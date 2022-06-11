@@ -10,7 +10,6 @@ void IC::init()
 {
     db<Init, IC>(TRC) << "IC::init()" << endl;
 
-    /*
 
     assert(CPU::int_disabled()); // will be reenabled at Thread::init() by Context::load()
 
@@ -24,7 +23,6 @@ void IC::init()
     for(Interrupt_Id i = EXCS; i < INTS; i++)
         _int_vector[i] = int_not;
 
-    */
 }
 
 __END_SYS

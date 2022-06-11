@@ -24,11 +24,8 @@ void event_test(int min, int max, int event_class);
 
 int main()
 {
-    cout << "CYCLES"  << endl;
-    cout << "MSB: " << PMU::mcycleh() << " | LSB: " << PMU::mcycle() << endl << endl; 
-    
-    cout << "INSTRUCTIONS" << endl;
-    cout << "MSB: " << PMU::minstreth() << " | LSB: " << PMU::minstret() << endl << endl;
+    cout << "CYCLES: "  << PMU::mcycle() << endl ; 
+    cout << "INSTRUCTIONS: " << PMU::minstret() << endl << endl;
 
     if (ALLOW_EVENTS_TEST) {
         cout << "EVENTS TEST" << endl;
@@ -44,7 +41,7 @@ int main()
     } else {
         cout << "Events (Instruction Commit, Microarchitectural and Memory System) are not implemented by QEMU to test!" << endl;
     }
-
+        
     return 0;
 }
 

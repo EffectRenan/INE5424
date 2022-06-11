@@ -10,7 +10,7 @@ template<> struct Traits<Build>: public Traits_Tokens
 {
     // Basic configuration
     static const unsigned int MODE = LIBRARY;
-    static const unsigned int ARCHITECTURE = RV32;
+    static const unsigned int ARCHITECTURE = RV64;
     static const unsigned int MACHINE = RISCV;
     static const unsigned int MODEL = SiFive_U;
     static const unsigned int CPUS = 1;
@@ -130,7 +130,7 @@ template<> struct Traits<Thread>: public Traits<Build>
     static const bool simulate_capacity = false;
 
     typedef RR Criterion;
-    static const unsigned int QUANTUM = 500000; // us
+    static const unsigned int QUANTUM = 100000; // us
 };
 
 template<> struct Traits<Scheduler<Thread>>: public Traits<Build>
