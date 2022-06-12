@@ -145,6 +145,19 @@ public:
     FCFS(int p = NORMAL, Tn & ... an);
 };
 
+// PP
+class PP: public Priority
+{
+public:
+    static const bool timed = true;
+    static const bool dynamic = false;
+    static const bool preemptive = true;
+
+public:
+    template <typename ... Tn>
+    PP(int p = NORMAL, Tn & ... an);
+};
+
 __END_SYS
 
 #endif
