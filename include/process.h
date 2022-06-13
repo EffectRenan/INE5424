@@ -50,7 +50,8 @@ public:
         NORMAL  = Criterion::NORMAL,
         LOW     = Criterion::LOW,
         MAIN    = Criterion::MAIN,
-        IDLE    = Criterion::IDLE
+        IDLE    = Criterion::IDLE,
+        IO      = Criterion::IO
     };
 
     // Thread Queue
@@ -109,7 +110,7 @@ protected:
     static void reschedule();
     static void time_slicer(IC::Interrupt_Id interrupt);
 
-    static void dispatch(Thread * prev, Thread * next, bool charge = true, bool award = false);
+    static void dispatch(Thread * prev, Thread * next, bool charge = true);
 
     static int idle();
 

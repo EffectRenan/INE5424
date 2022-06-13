@@ -29,7 +29,8 @@ public:
         HIGH   = 1,
         NORMAL = (unsigned(1) << (sizeof(int) * 8 - 1)) - 3,
         LOW    = (unsigned(1) << (sizeof(int) * 8 - 1)) - 2,
-        IDLE   = (unsigned(1) << (sizeof(int) * 8 - 1)) - 1
+        IDLE   = (unsigned(1) << (sizeof(int) * 8 - 1)) - 1,
+        IO     = NORMAL - 1
     };
 
     // Constructor helpers
@@ -149,13 +150,17 @@ public:
 class PP: public Priority
 {
 public:
-    static const bool timed = true;
-    static const bool dynamic = false;
-    static const bool preemptive = true;
+    static const bool timed = false;
+    static const bool dynamic = true;
+    static const bool preemptive = false;
+    static const bool awarding = true;
+
 
 public:
     template <typename ... Tn>
     PP(int p = NORMAL, Tn & ... an);
+
+    bool award(bool end = false);
 };
 
 __END_SYS

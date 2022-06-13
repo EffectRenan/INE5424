@@ -101,12 +101,12 @@ void Thread::priority(const Criterion & c)
 
     db<Thread>(TRC) << "Thread::priority(this=" << this << ",prio=" << c << ")" << endl;
 
-    _link.rank(c);
-
     if(_state != RUNNING) { // reorder the scheduling queue
         _scheduler.remove(this);
+        _link.rank(c);
         _scheduler.insert(this);
-    }
+    } else
+        _link.rank(c);
 
     if(preemptive)
         reschedule();
@@ -243,6 +243,7 @@ void Thread::exit(int status)
     unlock();
 }
 
+
 void Thread::sleep(Queue * q)
 {
     db<Thread>(TRC) << "Thread::sleep(running=" << running() << ",q=" << q << ")" << endl;
@@ -257,7 +258,7 @@ void Thread::sleep(Queue * q)
 
     Thread * next = _scheduler.chosen();
 
-    dispatch(prev, next, award = true);
+    dispatch(prev, next);
 }
 
 
@@ -321,17 +322,18 @@ void Thread::time_slicer(IC::Interrupt_Id i)
 }
 
 
-void Thread::dispatch(Thread * prev, Thread * next, bool charge, bool award)
+void Thread::dispatch(Thread * prev, Thread * next, bool charge)
 {
+
+    if (Criterion::awarding) {
+        prev->criterion().award(prev->state() == FINISHING || prev->criterion() == IDLE || prev->criterion() == MAIN);
+    }
+
     // "next" is not in the scheduler's queue anymore. It's already "chosen"
 
     if(charge) {
         if(Criterion::timed)
             _timer->restart();
-    }
-
-    if(award) {
-        if(Criterion::)
     }
 
     if(prev != next) {
@@ -345,6 +347,8 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge, bool award)
             tmp.save();
             db<Thread>(INF) << "Thread::dispatch:prev={" << prev << ",ctx=" << tmp << "}" << endl;
         }
+        db<Thread>(INF) << "Thread::dispatch:next={" << next << ",ctx=" << *next->_context << "}" << endl;
+
         // The non-volatile pointer to volatile pointer to a non-volatile context is correct
         // and necessary because of context switches, but here, we are locked() and
         // passing the volatile to switch_constext forces it to push prev onto the stack,

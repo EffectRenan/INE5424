@@ -12,4 +12,19 @@ FCFS::FCFS(int p, Tn & ... an): Priority((p == IDLE) ? IDLE : Alarm::elapsed()) 
 // Since the definition above is only known to this unit, forcing its instantiation here so it gets emitted in scheduler.o for subsequent linking with other units is necessary.
 template FCFS::FCFS<>(int p);
 
+template <typename ... Tn>
+PP::PP(int p, Tn & ... an): Priority((p == IDLE) ? IDLE : p) {}
+
+// Since the definition above is only known to this unit, forcing its instantiation here so it gets emitted in scheduler.o for subsequent linking with other units is necessary.
+template PP::PP<>(int p);
+
+bool PP::award(bool end) {
+    db<PP>(TRC) << "PP award" << endl;
+
+    if (!end)
+        _priority = HIGH;
+
+    return !end;
+}
+
 __END_SYS
