@@ -20,8 +20,7 @@ private:
 
     // Registers offsets from CLINT_BASE
     enum {               // Description
-        MTIME  = 0xbff8, // Counter (lower 32 bits)
-        MTIMEH = 0xbffc  // Counter (upper 32 bits)
+        MTIME  = 0xbff8, // Counter
     };
 
 public:
@@ -35,7 +34,7 @@ public:
     static Hertz frequency() { return CLOCK; }
     static PPB accuracy() { return ACCURACY; }
 
-    static Time_Stamp time_stamp() { return (CPU::Reg64(reg(MTIMEH)) << 32) | reg(MTIME); }
+    static Time_Stamp time_stamp() { return CPU::Reg64(reg(MTIME)); }
 
 private:
     static void init() {}
