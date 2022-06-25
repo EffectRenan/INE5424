@@ -35,7 +35,7 @@ public:
 
     void release() {
         db<Spin>(TRC) << "Spin::release[this=" << this << "]() => {owner=" << hex << _owner << dec << ",level=" << _level << "}" << endl;
-
+        
         if(--_level <= 0) {
     	    _level = 0;
             _owner = 0;
@@ -66,7 +66,7 @@ public:
 
         db<Spin>(TRC) << "Spin::release[SPIN=" << this << "]()}" << endl;
     }
-
+    
 private:
     volatile bool _locked;
 };

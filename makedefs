@@ -222,7 +222,13 @@ ifeq ($(ARCH),rv64)
 riscv_CC_FLAGS		:= -march=rv64gc -mabi=lp64d -Wl, -mno-relax -mcmodel=medany
 riscv_AS_FLAGS		:= -march=rv64gc -mabi=lp64d
 riscv_LD_FLAGS		:= -m elf64lriscv_lp64f --no-relax
-riscv_EMULATOR		= qemu-system-riscv64 $(QEMU_DEBUG) -machine sifive_u -cpu rv64 -smp 2 -m $(MEM_SIZE)k -serial mon:stdio -bios none -nographic -no-reboot -kernel 
+
+riscv_cpus := 2
+ifeq ($(shell test $(CPUS) -gt 2; echo $$?),0)
+    riscv_cpus := $(CPUS)
+endif
+
+riscv_EMULATOR		= qemu-system-riscv64 $(QEMU_DEBUG) -machine sifive_u -cpu rv64 -smp ${riscv_cpus} -m $(MEM_SIZE)k -serial mon:stdio -bios none -nographic -no-reboot -kernel 
 
 else
 riscv_CC_FLAGS		:= -march=rv32gc -mabi=ilp32d -Wl, -mno-relax
@@ -252,7 +258,7 @@ MACH_LD_FLAGS		:= $($(MACH)_LD_FLAGS)
 MACH_CODE_NAME		:= $($(MACH)_CODE_NAME)
 MACH_DATA_NAME		:= $($(MACH)_DATA_NAME)
 MACH_EMULATOR		= $($(MACH)_EMULATOR)
-MACH_DEBUGGER		:= $(TERM) $($(MACH)_DEBUGGER) -ex "target remote:1235" -ex "set confirm off"
+MACH_DEBUGGER		:= $(TERM) $($(MACH)_DEBUGGER) -ex "target extended-remote localhost:1235" -ex "set confirm off" -ex "add-inferior" -ex "inferior 2" -ex "attach 2" -ex "set schedule-multiple on"
 MACH_FLASHER		= $($(MACH)_FLASHER)
 MACH_MAGIC		:= $($(MACH)_MAGIC)
 MACH_IMGSUFF		:= $($(MACH)_IMG_SUFFIX)

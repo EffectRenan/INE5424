@@ -163,6 +163,29 @@ public:
     bool award(bool end = false);
 };
 
+// Multicore Round-Robin
+class MRR: public RR
+{
+public:
+    static const unsigned int HEADS = Traits<Machine>::CPUS;
+
+public:
+    template <typename ... Tn>
+    MRR(int p = NORMAL, Tn & ... an): RR(p) {}
+
+    static unsigned int current_head() { return CPU::id(); }
+};
+
+
 __END_SYS
+
+__BEGIN_UTIL
+
+// MRR
+template<typename T>
+class Scheduling_Queue<T, MRR>:
+public Multihead_Scheduling_List<T> {};
+
+__END_UTIL
 
 #endif

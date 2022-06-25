@@ -11,12 +11,15 @@ extern "C" { static void print_context(); }
 
 __BEGIN_SYS
 
+static CPU::Reg a0;
+
 IC::Interrupt_Handler IC::_int_vector[IC::INTS];
 
 void IC::entry()
 {
     // Save context
     CPU::Context::push(true);
+
     ASM("       la     ra, 1f                   \n"     // set LR to restore context before returning
         "       j      %0                       \n" : : "i"(&dispatch));
 
@@ -30,22 +33,31 @@ void IC::entry()
     // Restore context
     ASM("1:                                     \n");
     CPU::Context::pop(true);
+    
+    // CPU::mstatus(CPU::MPP_M | CPU::MPIE);               // stay in machine mode and reenable interrupts at mret
+
     CPU::iret();
 }
 
 void IC::dispatch()
 {
-    Interrupt_Id id = int_id();
-    // db<Init, IC>(WRN) << "ENTRY !! " << id << " | " << INT_SYS_TIMER << " | " << (id == INT_SYS_TIMER) << endl;
-    // db<Init, IC>(WRN) << "ENTRY !! " << id << " | " << INT_SYS_TIMER << " | " << endl;
+    db<Init, IC>(TRC) << "ICdispatch | " << CPU::id() << endl;
 
+    Interrupt_Id id = int_id();
+    a0 = CPU::a0(); // exit passes status through a0
+    
     if((id != INT_SYS_TIMER) || Traits<IC>::hysterically_debugged)
         db<IC>(TRC) << "IC::dispatch(i=" << id << ")" << endl;
-
+   
     // MIP.MTI is a direct logic on (MTIME == MTIMECMP) and reseting the Timer seems to be the only way to clear it
     if(id == INT_SYS_TIMER) {
-        // db<Init, IC>(WRN) << "Timer reset" << endl;
+        db<Init, IC>(TRC) << "Timer reset" << endl;
         Timer::reset();
+    }
+    
+    // IPIs must be acknowledged before calling the ISR, because in RISC-V, MIP set bits will keep on triggering interrupts until they are cleared
+    if(id == INT_RESCHEDULER) {
+        IC::ipi_eoi(id);
     }
 
     _int_vector[id](id);
@@ -71,58 +83,66 @@ void IC::exception(Interrupt_Id id)
     CPU::Reg tval = CPU::mtval();
     Thread * thread = Thread::self();
 
-    db<IC,System>(WRN) << "IC::Exception(" << id << ") => {" << hex << "core=" << core << ",thread=" << thread << ",epc=" << epc << ",sp=" << sp << ",status=" << status << ",cause=" << cause << ",tval=" << tval << "}" << dec;
+    if((id == 12) && (epc == CPU::Reg(&__exit))) { // a page fault on __exit is triggered by MAIN after returing to CRT0
+        db<IC, Thread>(WRN) << " => Thread::exit()";
+        CPU::a0(a0);
+        __exit();
+    } else {
 
-    switch(id) {
-    case 0: // unaligned instruction
-        db<IC, System>(WRN) << " => unaligned instruction";
-        break;
-    case 1: // instruction access failure
-        db<IC, System>(WRN) << " => instruction protection violation";
-        break;
-    case 2: // illegal instruction
-        db<IC, System>(WRN) << " => illegal instruction";
-        break;
-    case 3: // break point
-        db<IC, System>(WRN) << " => break point";
-        break;
-    case 4: // unaligned load address
-        db<IC, System>(WRN) << " => unaligned data read";
-        break;
-    case 5: // load access failure
-        db<IC, System>(WRN) << " => data protection violation (read)";
-        break;
-    case 6: // unaligned store address
-        db<IC, System>(WRN) << " => unaligned data write";
-        break;
-    case 7: // store access failure
-        db<IC, System>(WRN) << " => data protection violation (write)";
-        break;
-    case 8: // user-mode environment call
-    case 9: // supervisor-mode environment call
-    case 10: // reserved... not described
-    case 11: // machine-mode environment call
-        db<IC, System>(WRN) << " => bad ecall";
-        break;
-    case 12: // Instruction Page Table failure
-        db<IC, System>(WRN) << " => page fault";
-        break;
-    case 13: // Load Page Table failure
-    case 14: // reserved... not described
-    case 15: // Store Page Table failure
-        db<IC, System>(WRN) << " => page table protection violation";
-        break;
-    default:
-        int_not(id);
-        break;
+        db<IC,System>(WRN) << "IC::Exception(" << id << ") => {" << hex << "core=" << core << ",thread=" << thread << ",epc=" << epc << ",sp=" << sp << ",status=" << status << ",cause=" << cause << ",tval=" << tval << "}" << dec;
+    
+        switch(id) {
+        case 0: // unaligned instruction
+            db<IC, System>(WRN) << " => unaligned instruction";
+            break;
+        case 1: // instruction access failure
+            db<IC, System>(WRN) << " => instruction protection violation";
+            break;
+        case 2: // illegal instruction
+            db<IC, System>(WRN) << " => illegal instruction";
+            break;
+        case 3: // break point
+            db<IC, System>(WRN) << " => break point";
+            break;
+        case 4: // unaligned load address
+            db<IC, System>(WRN) << " => unaligned data read";
+            break;
+        case 5: // load access failure
+            db<IC, System>(WRN) << " => data protection violation (read)";
+            break;
+        case 6: // unaligned store address
+            db<IC, System>(WRN) << " => unaligned data write";
+            break;
+        case 7: // store access failure
+            db<IC, System>(WRN) << " => data protection violation (write)";
+            break;
+        case 8: // user-mode environment call
+        case 9: // supervisor-mode environment call
+        case 10: // reserved... not described
+        case 11: // machine-mode environment call
+            db<IC, System>(WRN) << " => bad ecall";
+            break;
+        case 12: // Instruction Page Table failure
+            db<IC, System>(WRN) << " => page fault";
+            break;
+        case 13: // Load Page Table failure
+        case 14: // reserved... not described
+        case 15: // Store Page Table failure
+            db<IC, System>(WRN) << " => page table protection violation";
+            break;
+        default:
+            int_not(id);
+            break;
+        }
+
+        db<IC, System>(WRN) << endl;
+
+        if(Traits<Build>::hysterically_debugged)
+            Machine::panic();
+
+        while(true);
+        CPU::fr(sizeof(long *)); // tell CPU::Context::pop(true) to perform PC = PC + [4|8] on return
     }
-
-    db<IC, System>(WRN) << endl;
-
-    if(Traits<Build>::hysterically_debugged)
-        Machine::panic();
-
-    CPU::fr(sizeof(void *)); // tell CPU::Context::pop(true) to perform PC = PC + [4|8] on return
 }
 
 __END_SYS

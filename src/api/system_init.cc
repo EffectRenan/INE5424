@@ -8,6 +8,8 @@ __BEGIN_SYS
 
 void System::init()
 {
+    db<Init, System>(TRC) << "System::init()" << endl;
+
     if(Traits<Alarm>::enabled)
         Alarm::init();
 

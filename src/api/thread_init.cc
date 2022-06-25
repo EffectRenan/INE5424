@@ -25,12 +25,20 @@ void Thread::init()
         // In this case, _init will have already been called, before Init_Application to construct MAIN's global objects.
         main = reinterpret_cast<Main *>(__epos_app_entry);
 
+    CPU::smp_barrier();
+
     Criterion::init();
 
-    new (SYSTEM) Thread(Thread::Configuration(Thread::RUNNING, Thread::MAIN), main);
+    if(CPU::id() == 0) {
+        new (SYSTEM) Thread(Thread::Configuration(Thread::RUNNING, Thread::MAIN), main);
 
-    // Idle thread creation does not cause rescheduling (see Thread::constructor_epilogue)
-    new (SYSTEM) Thread(Thread::Configuration(Thread::READY, Thread::IDLE), &Thread::idle);
+        // Idle thread creation does not cause rescheduling (see Thread::constructor_epilogue)
+        new (SYSTEM) Thread(Thread::Configuration(Thread::READY, Thread::IDLE), &Thread::idle);
+    } else {
+        new (SYSTEM) Thread(Thread::Configuration(Thread::RUNNING, Thread::IDLE), &Thread::idle);
+    }
+
+    CPU::smp_barrier();
 
     // The installation of the scheduler timer handler does not need to be done after the
     // creation of threads, since the constructor won't call reschedule() which won't call
@@ -44,7 +52,17 @@ void Thread::init()
     // No more interrupts until we reach init_end
     CPU::int_disable();
 
+    // Install an interrupt handler to receive forced reschedules
+    if(smp) {
+        if(CPU::id() == 0) {
+            IC::int_vector(IC::INT_RESCHEDULER, rescheduler);
+        }
+
+        IC::enable(IC::INT_RESCHEDULER);
+    }
+    
     // Transition from CPU-based locking to thread-based locking
+    CPU::smp_barrier();
     This_Thread::not_booting();
 }
 

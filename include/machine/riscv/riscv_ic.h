@@ -93,7 +93,8 @@ public:
     using IC_Common::Interrupt_Handler;
 
     enum {
-        INT_SYS_TIMER = EXCS + IRQ_MAC_TIMER
+        INT_SYS_TIMER = EXCS + IRQ_MAC_TIMER,
+        INT_RESCHEDULER = EXCS + IRQ_MAC_SOFT
     };
 
 public:
@@ -151,6 +152,17 @@ public:
         assert(i < INTS);
         reg(MSIP + cpu * MSIP_CORE_OFFSET) = 1;
     }
+    
+    static void ipi_eoi(Interrupt_Id i) {
+        // assert(i < INTS);
+        reg(MSIP + CPU::id() * MSIP_CORE_OFFSET) = 0;
+    }
+
+    static Reg msip(unsigned int cpu) {
+        // assert(i < INTS);
+        return reg(MSIP + cpu * MSIP_CORE_OFFSET);
+    }
+
 
 private:
     static void dispatch();

@@ -12,6 +12,10 @@ __BEGIN_SYS
 class CPU: protected CPU_Common
 {
     friend class Init_System; // for CPU::init()
+    friend class Machine;
+
+private:
+    static const bool smp = Traits<System>::multicore;
 
 public:
     // CPU Native Data Types
@@ -55,7 +59,7 @@ public:
         TVM             = 1 << 20,      // Trap Virtual Memory makes SATP inaccessible in supervisor mode
         TW              = 1 << 21,      // Timeout Wait for WFI outside machine mode
         TSR             = 1 << 22,      // Trap SRet in supervisor mode
-        SD              = 1 << 31,      // Status Dirty = (FS | XS)
+        SD              = 1L<< 63,      // Status Dirty = (FS | XS)
     };
 
     // Interrupt-Enable, Interrupt-Pending and Machine Cause Registers ([m|s]ie, [m|s]ip, and [m|s]cause when interrupt bit is set)
@@ -216,7 +220,7 @@ public:
 
     static unsigned int id() { return mhartid(); }
 
-    static unsigned int cores() { return 1; }
+    static unsigned int cores() { return Traits<Build>::CPUS; }
 
     using CPU_Common::clock;
     using CPU_Common::min_clock;
@@ -276,7 +280,7 @@ public:
         return old;
     }
 
-    static void smp_barrier(unsigned long cores = CPU::cores()) {}
+    static void smp_barrier(unsigned long cores = CPU::cores()) { CPU_Common::smp_barrier<&finc>(cores, id()); }
 
     static void flush_tlb() {         ASM("sfence.vma"    : :           : "memory"); }
     static void flush_tlb(Reg addr) { ASM("sfence.vma %0" : : "r"(addr) : "memory"); }
@@ -326,9 +330,7 @@ public:
     static void a1(Reg r) {  ASM("mv a1, %0" : : "r"(r) :); }
 
     static void ecall() { ASM("ecall"); }
-    static void iret() {
-        mret(); 
-    }
+    static void iret() { mret(); }
 
     // Machine mode
     static void mint_enable()  { ASM("csrsi mstatus, %0" : : "i"(MIE) : "cc"); }
@@ -415,7 +417,6 @@ private:
 
 inline void CPU::Context::push(bool interrupt)
 {
-
     ASM("       addi     sp, sp, %0             \n" : : "i"(-sizeof(Context))); // adjust SP for the pushes below
     
 
