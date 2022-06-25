@@ -400,7 +400,7 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         // db<Thread>(WRN) << prev->criterion() << " | " << next->criterion() << " | " << CPU::id() << endl;
 
         if(smp) {
-            // for(int i = 0; i < 1000000; i++) {}
+            for(int i = 0; i < 1000000; i++) {}
             _lock.release();
         }
         
@@ -420,7 +420,6 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
 
     }
 }
-
 
 int Thread::idle()
 {

@@ -20,8 +20,8 @@ protected:
 
     // Atomic operations
     bool tsl(volatile bool & lock) { return CPU::tsl(lock); }
-    int finc(volatile int & number) { return CPU::finc(number); }
-    int fdec(volatile int & number) { return CPU::fdec(number); }
+    int finc(volatile long & number) { return CPU::finc(number); }
+    int fdec(volatile long & number) { return CPU::fdec(number); }
 
     // Thread operations
     void begin_atomic() { Thread::lock(); }
@@ -60,7 +60,7 @@ public:
     void v();
 
 private:
-    volatile int _value;
+    volatile long _value;
 };
 
 

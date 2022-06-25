@@ -138,17 +138,17 @@ public:
         return old;
     }
 
-    template <int (* finc)(volatile int &)>
+    template <long (* finc)(volatile long &)>
     static void smp_barrier(unsigned int cores, unsigned int id) {
         if(cores > 1) {
-            static volatile int ready[2];
-            static volatile int i;
+            static volatile long ready[2];
+            static volatile long i;
 
-            int j = i;
+            long j = i;
 
             finc(ready[j]);
             if(id == 0) {
-                while(ready[j] < int(cores));       // wait for all CPUs to be ready
+                while(ready[j] < long(cores));       // wait for all CPUs to be ready
                 i = !i;                             // toggle ready
                 ready[j] = 0;                       // signalizes waiting CPUs
             } else {
