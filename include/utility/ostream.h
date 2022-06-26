@@ -28,7 +28,7 @@ public:
     OStream(): _base(10), _error(false) {}
 
     OStream & operator<<(const Begl & begl) {
-        if (Traits<System>::multicore)
+        if (Traits<System>::multicore && Traits<Debug>::trace)
             _print_preamble();
 
         _error = false;
@@ -36,7 +36,7 @@ public:
     }
 
     OStream & operator<<(const Endl & endl) {
-        if (Traits<System>::multicore)
+        if (Traits<System>::multicore && Traits<Debug>::trace)
             _print_trailler(_error);
 
         print("\n");

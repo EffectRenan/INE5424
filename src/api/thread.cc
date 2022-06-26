@@ -401,6 +401,7 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
 
         if(smp) {
             for(int i = 0; i < 1000000; i++) {}
+            // We're not locked here in multicore, so it might throw an exception.
             _lock.release();
         }
         
@@ -409,8 +410,12 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         // passing the volatile to switch_constext forces it to push prev onto the stack,
         // disrupting the context (it doesn't make a difference for Intel, which already saves
         // parameters on the stack anyway).
+        
 
+
+        
         CPU::switch_context(const_cast<Context **>(&prev->_context), next->_context);
+
 
         // db<Thread>(WRN) << prev->criterion() << " | " << next->criterion() << " | " << CPU::id() << endl;
 

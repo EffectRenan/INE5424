@@ -218,7 +218,9 @@ public:
     static Reg fr() { Reg r; ASM("mv %0, a0" :  "=r"(r)); return r; }
     static void fr(Reg r) {  ASM("mv a0, %0" : : "r"(r) :); }
 
-    static unsigned int id() { return mhartid(); }
+    static unsigned int id() { 
+        return tp();
+    }
 
     static unsigned int cores() { return Traits<Build>::CPUS; }
 
@@ -336,7 +338,7 @@ public:
     static void mint_enable()  { ASM("csrsi mstatus, %0" : : "i"(MIE) : "cc"); }
     static void mint_disable() { ASM("csrci mstatus, %0" : : "i"(MIE) : "cc"); }
 
-    static Reg mhartid() { Reg r; ASM("csrr %0, mhartid" : "=r"(r) : : "memory", "cc"); return r & 0x3; }
+    static Reg mhartid() { Reg r; ASM("csrr %0, mhartid" : "=r"(r) : : "memory", "cc"); return r & 0b111; }
 
     static void mscratch(Reg r)   { ASM("csrw mscratch, %0" : : "r"(r) : "cc"); }
     static Reg  mscratch() { Reg r; ASM("csrr %0, mscratch" :  "=r"(r) : : ); return r; }
@@ -413,6 +415,8 @@ private:
 private:
     static unsigned int _cpu_clock;
     static unsigned int _bus_clock;
+    static volatile unsigned long _lock;
+    static volatile bool _zero;
 };
 
 inline void CPU::Context::push(bool interrupt)
@@ -508,9 +512,6 @@ inline void CPU::Context::pop(bool interrupt)
         "       addi    sp, sp, %0              \n" : : "i"(sizeof(Context))); // complete the pops above by adjusting SP
 
     ASM("       csrw    mstatus, x3             \n");   // MSTATUS = ST
-
-    // db<Init, CPU>(WRN) << "context pop!" << endl;
-
 }
 
 inline CPU::Reg64 htole64(CPU::Reg64 v) { return CPU::htole64(v); }

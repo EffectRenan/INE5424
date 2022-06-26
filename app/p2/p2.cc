@@ -19,15 +19,11 @@ int main() {
     phil[0] = new Thread(&test);
   }
 
-  while (true)
-    ;
-
-  for (unsigned i = 0; i < 3000000000; i++)
-    ;
-
   for (int i = 0; i < 5; i++) {
     phil[i]->join();
   }
+
+
 
   for (int i = 0; i < 5; i++) {
     delete phil[i];
@@ -40,8 +36,7 @@ int main() {
 int test() {
   cout << "test: " << CPU::id() << endl;
   // cout << "test!" << endl;
-  for (unsigned i = 0; i < 3000000000; i++)
-    ;
+  for (unsigned i = 0; i < 3000000000; i++);
   // for (unsigned i = 0; i < 50000000000; i++);
   // for (unsigned i = 0; i < 50000000000; i++);
   // cout << "end test!" << endl; return 0;
