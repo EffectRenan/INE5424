@@ -361,15 +361,9 @@ void Thread::time_slicer(IC::Interrupt_Id i)
 
 void Thread::dispatch(Thread * prev, Thread * next, bool charge)
 {
-    // assert(locked()); // locking handled by caller
-
-    // db<Thread>(WRN) << CPU::id() << endl;
-    // db<Thread>(WRN) << prev->criterion() << endl;
+    assert(locked()); // locking handled by caller
 
     db<Thread>(TRC) << prev->criterion() << " | " << next->criterion() << " | " << CPU::id() << endl;
-    // db<Thread>(WRN) << endl;
-
-    // assert(CPU::int_disabled()); // locking handled by caller
 
     if (Criterion::awarding) {
         prev->criterion().award(prev->state() == FINISHING || prev->criterion() == IDLE || prev->criterion() == MAIN);
@@ -397,27 +391,18 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
 
         db<Thread>(INF) << "Thread::dispatch:next={" << next << ",ctx=" << *next->_context << "}" << endl;
         
-        // db<Thread>(WRN) << prev->criterion() << " | " << next->criterion() << " | " << CPU::id() << endl;
-
         if(smp) {
             for(int i = 0; i < 1000000; i++) {}
-            // We're not locked here in multicore, so it might throw an exception.
             _lock.release();
         }
-        
+
         // The non-volatile pointer to volatile pointer to a non-volatile context is correct
         // and necessary because of context switches, but here, we are locked() and
         // passing the volatile to switch_constext forces it to push prev onto the stack,
         // disrupting the context (it doesn't make a difference for Intel, which already saves
         // parameters on the stack anyway).
         
-
-
-        
         CPU::switch_context(const_cast<Context **>(&prev->_context), next->_context);
-
-
-        // db<Thread>(WRN) << prev->criterion() << " | " << next->criterion() << " | " << CPU::id() << endl;
 
         if(smp) {
             _lock.acquire();

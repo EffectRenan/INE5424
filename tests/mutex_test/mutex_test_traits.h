@@ -10,12 +10,12 @@ template<> struct Traits<Build>: public Traits_Tokens
 {
     // Basic configuration
     static const unsigned int MODE = LIBRARY;
-    static const unsigned int ARCHITECTURE = RV32;
+    static const unsigned int ARCHITECTURE = RV64;
     static const unsigned int MACHINE = RISCV;
-    static const unsigned int MODEL = SiFive_E; 
+    static const unsigned int MODEL = SiFive_U;
     static const unsigned int CPUS = 1;
     static const unsigned int NODES = 1; // (> 1 => NETWORKING)
-    static const unsigned int EXPECTED_SIMULATION_TIME = 60; // s (0 => not simulated)
+    static const unsigned int EXPECTED_SIMULATION_TIME = 10; // s (0 => not simulated)
 
     // Default flags
     static const bool enabled = true;
@@ -129,7 +129,7 @@ template<> struct Traits<Thread>: public Traits<Build>
     static const bool trace_idle = hysterically_debugged;
     static const bool simulate_capacity = false;
 
-    static const bool preemptive = true;
+    typedef RR Criterion;
     static const unsigned int QUANTUM = 100000; // us
 };
 
