@@ -14,7 +14,6 @@ extern "C" {
     void __exit();
     void _lock_heap();
     void _unlock_heap();
-    void _pre_main();
 }
 
 __BEGIN_SYS
@@ -30,8 +29,6 @@ class Thread
     friend class IC;                    // for link() for priority ceiling
     friend void ::_lock_heap();         // for lock()
     friend void ::_unlock_heap();       // for unlock()
-    friend void ::_pre_main();          // for harts
-
 
 protected:
     static const bool smp = Traits<Thread>::smp;
@@ -110,23 +107,22 @@ protected:
 
     static Thread * volatile running() { return _scheduler.chosen(); }
 
-    // static void l_locoock() { CPU::int_disable(); }
     static void lock(Spin * lock = &_lock) {
         CPU::int_disable();
 
-        if(smp)
+        if(smp) {
             lock->acquire();
+        }
     }
 
-    // static void unlock() { CPU::int_enable(); }
     static void unlock(Spin * lock = &_lock) {
-        if(smp)
+        if(smp) {
             lock->release();
+        }
         
         CPU::int_enable();
     }
 
-    // static bool locked() { return CPU::int_disabled(); }
     static volatile bool locked() { return (smp) ? _lock.taken() : CPU::int_disabled(); }
 
     static void sleep(Queue * q);

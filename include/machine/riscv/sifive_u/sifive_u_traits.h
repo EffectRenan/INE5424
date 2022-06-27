@@ -63,7 +63,6 @@ template <> struct Traits<Timer>: public Traits<Machine_Common>
     static const bool debugged = hysterically_debugged;
 
     static const unsigned int UNITS = 1;
-    // static const unsigned int CLOCK = 1000000;
     static const unsigned int CLOCK = 1000000;
 
     // Meaningful values for the timer frequency range from 100 to 10000 Hz. The

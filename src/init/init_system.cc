@@ -65,7 +65,6 @@ public:
             }
         }
 
-
         // Initialization continues at init_end
     }
 };

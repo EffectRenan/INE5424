@@ -19,7 +19,7 @@ class Timer: private Timer_Common, private CLINT
     friend class Init_System;
 
 protected:
-    static const unsigned int CHANNELS = 2;
+    static const unsigned int CHANNELS = 3;
     static const unsigned int FREQUENCY = Traits<Timer>::FREQUENCY;
 
     typedef IC_Common::Interrupt_Id Interrupt_Id;
@@ -31,7 +31,9 @@ public:
     // Channels
     enum {
         SCHEDULER,
-        ALARM
+        ALARM,
+        USER,
+        USER1 = USER
     };
 
     static const Hertz CLOCK = Traits<Timer>::CLOCK;
@@ -115,6 +117,15 @@ public:
 public:
     Alarm_Timer(const Handler & handler): Timer(ALARM, FREQUENCY, handler) {}
 };
+
+// Timer available for users
+class User_Timer: public Timer
+{
+public:
+    User_Timer(unsigned int channel, Microsecond time, const Handler & handler, bool retrigger = false)
+    : Timer(USER, 1000000 / time, handler, retrigger) { assert(channel == USER); }
+};
+
 
 __END_SYS
 

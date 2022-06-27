@@ -5,26 +5,6 @@
 #include <process.h>
 #include <architecture.h>
 
-// extern "C" {
-//     __USING_SYS;
-
-//     // Heap
-//     static Spin _heap_lock;
-//     void _lock_heap() { Thread::lock(&_heap_lock); }
-//     void _unlock_heap() { Thread::unlock(&_heap_lock); }
-//     
-//     void _pre_main() {
-//         db<Init, Thread>(WRN) << "_pre_main: " << CPU::id() << endl;
-//         // CPU::smp_barrier();
-
-//         if (CPU::id() != 0) {
-//             Thread * thread = Thread::self();
-//             thread->idle();
-//             while(true);
-//         }
-//     }
-// }
-
 extern "C" {
     __USING_SYS;
 

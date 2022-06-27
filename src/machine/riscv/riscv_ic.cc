@@ -38,7 +38,7 @@ void IC::entry()
 
 void IC::dispatch()
 {
-    db<Init, IC>(TRC) << "ICdispatch | " << CPU::id() << endl;
+    db<Init, IC>(TRC) << "IC_dispatch | " << CPU::id() << endl;
 
     Interrupt_Id id = int_id();
     // a0 = CPU::a0(); // exit passes status through a0
@@ -51,8 +51,8 @@ void IC::dispatch()
         db<Init, IC>(TRC) << "Timer reset" << endl;
         Timer::reset();
     }
-    
-    // IPIs must be acknowledged before calling the ISR, because in RISC-V, MIP set bits will keep on triggering interrupts until they are cleared
+   
+    // Reset MSIP
     if(id == INT_RESCHEDULER) {
         IC::ipi_eoi(id);
     }

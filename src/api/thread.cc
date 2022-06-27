@@ -361,8 +361,6 @@ void Thread::time_slicer(IC::Interrupt_Id i)
 
 void Thread::dispatch(Thread * prev, Thread * next, bool charge)
 {
-    assert(locked()); // locking handled by caller
-
     db<Thread>(TRC) << prev->criterion() << " | " << next->criterion() << " | " << CPU::id() << endl;
 
     if (Criterion::awarding) {
@@ -392,7 +390,10 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         db<Thread>(INF) << "Thread::dispatch:next={" << next << ",ctx=" << *next->_context << "}" << endl;
         
         if(smp) {
-            for(int i = 0; i < 1000000; i++) {}
+            assert(locked()); // locking handled by caller
+            #ifdef __sifive_u__
+            CPU::wait();
+            #endif
             _lock.release();
         }
 
@@ -407,7 +408,6 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         if(smp) {
             _lock.acquire();
         }
-
     }
 }
 

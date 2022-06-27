@@ -310,8 +310,6 @@ public:
         Context * ctx = new(sp) Context(entry, exit);
         init_stack_helper(&ctx->_x10, an ...); // x10 is a0
         sp -= sizeof(Context);
-        ctx = new(sp) Context(&_int_leave, 0); // this context will be popped by switch() to reach _int_leave(), which will activate the thread's context
-        ctx->_x10 = 0; // zero fr() for the pop(true) issued by _int_leave()
         return ctx;
     }
 
@@ -399,6 +397,8 @@ public:
 
     static void satp(Reg r) { ASM("csrw satp, %0" : : "r"(r) : "cc"); }
     static Reg  satp() { Reg r; ASM("csrr %0, satp" :  "=r"(r) : : ); return r; }
+    
+    static void wait() { for(int i = 0; i < 1000000; i++); }
 
 private:
     template<typename Head, typename ... Tail>
