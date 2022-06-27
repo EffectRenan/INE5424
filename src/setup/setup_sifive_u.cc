@@ -9,6 +9,7 @@
 
 extern "C" {
     void _start();
+    void _init();
 
     void _int_entry();
 
@@ -59,19 +60,22 @@ Setup::Setup()
 {
     CPU::int_disable(); // interrupts will be re-enabled at init_end
 
-    Display::init();
+    if (CPU::id() == 0) {
+        Display::init();
 
-    si = reinterpret_cast<System_Info *>(&__boot_time_system_info);
-    if(si->bm.n_cpus > Traits<Machine>::CPUS)
-        si->bm.n_cpus = Traits<Machine>::CPUS;
+        si = reinterpret_cast<System_Info *>(&__boot_time_system_info);
+        if(si->bm.n_cpus > Traits<Machine>::CPUS)
+            si->bm.n_cpus = Traits<Machine>::CPUS;
 
-    db<Setup>(TRC) << "Setup(si=" << reinterpret_cast<void *>(si) << ",sp=" << CPU::sp() << ")" << endl;
-    db<Setup>(INF) << "Setup:si=" << *si << endl;
+        db<Setup>(TRC) << "Setup(si=" << reinterpret_cast<void *>(si) << ",sp=" << CPU::sp() << ")" << endl;
+        db<Setup>(INF) << "Setup:si=" << *si << endl;
 
-    // Print basic facts about this EPOS instance
-    say_hi();
+        // Print basic facts about this EPOS instance
+        say_hi();
+    }
 
     // SETUP ends here, so let's transfer control to the next stage (INIT or APP)
+
     call_next();
 }
 
@@ -93,7 +97,7 @@ void Setup::say_hi()
     kout << "This is EPOS!\n" << endl;
     kout << "Setting up this machine as follows: " << endl;
     kout << "  Mode:         " << ((Traits<Build>::MODE == Traits<Build>::LIBRARY) ? "library" : (Traits<Build>::MODE == Traits<Build>::BUILTIN) ? "built-in" : "kernel") << endl;
-    kout << "  Processor:    " << Traits<Machine>::CPUS << " x RV32 at " << Traits<CPU>::CLOCK / 1000000 << " MHz (BUS clock = " << Traits<CPU>::CLOCK / 1000000 << " MHz)" << endl;
+    kout << "  Processor:    " << CPU::cores() << " x RV" << Traits<CPU>::WORD_SIZE << " at " << Traits<CPU>::CLOCK / 1000000 << " MHz (BUS clock = " << Traits<CPU>::CLOCK / 1000000 << " MHz)" << endl;
     kout << "  Machine:      SiFive-U" << endl;
     kout << "  Memory:       " << (si->bm.mem_top - si->bm.mem_base) / 1024 << " KB [" << reinterpret_cast<void *>(si->bm.mem_base) << ":" << reinterpret_cast<void *>(si->bm.mem_top) << "]" << endl;
     kout << "  User memory:  " << (FREE_TOP - FREE_BASE) / 1024 << " KB [" << reinterpret_cast<void *>(FREE_BASE) << ":" << reinterpret_cast<void *>(FREE_TOP) << "]" << endl;
@@ -144,28 +148,34 @@ using namespace EPOS::S;
 
 void _entry() // machine mode
 {
-    
-    if (CPU::id() != 0)
-        while(1)
+
+    CPU::tp(CPU::mhartid());                            // Save id in the thread pointer register.
+
+    if (!Traits<System>::multicore && CPU::id() != 0) {
+        while (true) {
             CPU::halt();
-
+        }
+    }
+    
     CPU::mstatusc(CPU::MIE);                            // disable interrupts
-    CPU::mies(CPU::MSI | CPU::MTI | CPU::MEI);          // enable interrupts at CLINT so IPI and timer can be triggered
+    CPU::mies(CPU::MSI);                                // enable interrupts at CLINT so IPI and timer can be triggered
     CLINT::mtvec(CLINT::DIRECT, _int_entry);            // setup a preliminary machine mode interrupt handler pointing it to _int_entry
-
+    
     CPU::sp(Memory_Map::BOOT_STACK + Traits<Machine>::STACK_SIZE * (CPU::id() + 1) - sizeof(long)); // set this hart stack (the first stack is reserved for _int_m2s)
-
+    
     CPU::mstatus(CPU::MPP_M | CPU::MPIE);               // stay in machine mode and reenable interrupts at mret
-
     CPU::mepc(CPU::Reg(&_setup));                       // entry = _setup
-    CPU::mret();                                        // enter supervisor mode at setup (mepc) with interrupts enabled (mstatus.mpie = true)
+    CPU::mret();
 }
 
-void _setup() // supervisor mode
+void _setup() // machine mode
 {
-    CPU::mie(CPU::MSI);                                 // enable MSI at CLINT so IPI can be triggered
-
-    Machine::clear_bss();
+    if (CPU::id() == 0) {
+        Machine::clear_bss();
+    } else {
+        CPU::int_enable();
+        CPU::halt();                                    // halt the hart waiting for an IPI from hart 0
+    }
 
     Setup setup;
 }

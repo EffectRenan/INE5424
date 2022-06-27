@@ -102,6 +102,8 @@ class Task;
 class Priority;
 class FCFS;
 class RR;
+class MRR;
+class PP;
 class RM;
 class DM;
 class EDF;

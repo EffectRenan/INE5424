@@ -209,23 +209,35 @@ riscv_IMG_SUFFIX	:= .img
 endif
 
 ifeq ($(MMOD),sifive_u)
-# riscv_CC_FLAGS		:= -march=rv64gc -mabi=lp64d -Wl, -mno-relax -mcmodel=medany
-# riscv_AS_FLAGS		:= -march=rv64gc -mabi=lp64d
-# riscv_LD_FLAGS		:= -m elf64lriscv_lp64f --no-relax
-# riscv_EMULATOR		= qemu-system-riscv64 $(QEMU_DEBUG) -machine virt -cpu rv64 -smp $(CPUS) -m $(MEM_SIZE)k -serial mon:stdio -bios none -nographic -no-reboot -kernel 
 
-riscv_CC_FLAGS		:= -march=rv32gc -mabi=ilp32d -Wl, -mno-relax
-riscv_AS_FLAGS		:= -march=rv32gc -mabi=ilp32d
-riscv_LD_FLAGS		:= -m elf32lriscv_ilp32f --no-relax
-
-riscv_EMULATOR		= qemu-system-riscv32 $(QEMU_DEBUG) -machine sifive_u -cpu rv32 -smp 2 -m $(MEM_SIZE)k -serial mon:stdio -bios none -nographic -no-reboot $(BOOT_ROM) -kernel 
-riscv_DEBUGGER		:= gdb-multiarch
-# riscv_DEBUGGER		:= $(COMP_PREFIX)gdb
+# riscv_DEBUGGER		:= gdb-multiarch
+riscv_DEBUGGER		:= $(COMP_PREFIX)gdb
 riscv_FLASHER		:= 
 riscv_MAGIC		:= --nmagic
 riscv_CODE_NAME		:= .init
 riscv_DATA_NAME		:= .data
 riscv_IMG_SUFFIX	:= .img
+
+ifeq ($(ARCH),rv64)
+riscv_CC_FLAGS		:= -march=rv64gc -mabi=lp64d -Wl, -mno-relax -mcmodel=medany
+riscv_AS_FLAGS		:= -march=rv64gc -mabi=lp64d
+riscv_LD_FLAGS		:= -m elf64lriscv_lp64f --no-relax
+
+riscv_cpus := $(CPUS)
+ifeq (${riscv_cpus},1)
+    riscv_cpus := 2 
+endif
+
+riscv_EMULATOR		= qemu-system-riscv64 $(QEMU_DEBUG) -machine sifive_u -cpu rv64 -smp ${riscv_cpus} -m $(MEM_SIZE)k -serial mon:stdio -bios none -nographic -no-reboot -kernel 
+
+else
+riscv_CC_FLAGS		:= -march=rv32gc -mabi=ilp32d -Wl, -mno-relax
+riscv_AS_FLAGS		:= -march=rv32gc -mabi=ilp32d
+riscv_LD_FLAGS		:= -m elf32lriscv_ilp32f --no-relax
+riscv_EMULATOR		= qemu-system-riscv32 $(QEMU_DEBUG) -machine sifive_u -cpu rv32 -smp 2 -m $(MEM_SIZE)k -serial mon:stdio -bios none -nographic -no-reboot $(BOOT_ROM) -kernel 
+
+endif
+
 endif
 
 atmega_CC_FLAGS		:= -mmcu=atmega128 -Wno-inline
@@ -246,7 +258,7 @@ MACH_LD_FLAGS		:= $($(MACH)_LD_FLAGS)
 MACH_CODE_NAME		:= $($(MACH)_CODE_NAME)
 MACH_DATA_NAME		:= $($(MACH)_DATA_NAME)
 MACH_EMULATOR		= $($(MACH)_EMULATOR)
-MACH_DEBUGGER		:= $(TERM) $($(MACH)_DEBUGGER) -ex "target remote:1235" -ex "set confirm off"
+MACH_DEBUGGER		:= $(TERM) $($(MACH)_DEBUGGER) -ex "target extended-remote localhost:1235" -ex "set confirm off" -ex "add-inferior" -ex "inferior 2" -ex "attach 2" -ex "set schedule-multiple on"
 MACH_FLASHER		= $($(MACH)_FLASHER)
 MACH_MAGIC		:= $($(MACH)_MAGIC)
 MACH_IMGSUFF		:= $($(MACH)_IMG_SUFFIX)
@@ -335,7 +347,7 @@ TEE		:= tee
 ifndef DISPLAY
 TERM		:= sh -c
 else
-TERM		:= konsole -e
+TERM		:= tilix -e
 endif
 
 TOUCH		:= touch

@@ -25,9 +25,9 @@ public:
     Spin(): _level(0), _owner(0) {}
 
     void acquire() {
-        unsigned int me = This_Thread::id();
+        unsigned long me = This_Thread::id();
 
-        while(CPU::cas(_owner, 0U, me) != me);
+        while(CPU::cas(_owner, 0LU, me) != me);
         _level++;
 
         db<Spin>(TRC) << "Spin::acquire[this=" << this << ",id=" << hex << me << "]() => {owner=" << _owner << dec << ",level=" << _level << "}" << endl;
@@ -35,7 +35,7 @@ public:
 
     void release() {
         db<Spin>(TRC) << "Spin::release[this=" << this << "]() => {owner=" << hex << _owner << dec << ",level=" << _level << "}" << endl;
-
+        
         if(--_level <= 0) {
     	    _level = 0;
             _owner = 0;
@@ -45,8 +45,8 @@ public:
     volatile bool taken() const { return (_owner != 0); }
 
 private:
-    volatile int _level;
-    volatile unsigned int _owner;
+    volatile long _level;
+    volatile unsigned long _owner;
 };
 
 // Flat Spin Lock
@@ -66,7 +66,7 @@ public:
 
         db<Spin>(TRC) << "Spin::release[SPIN=" << this << "]()}" << endl;
     }
-
+    
 private:
     volatile bool _locked;
 };

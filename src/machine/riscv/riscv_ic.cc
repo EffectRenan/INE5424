@@ -11,12 +11,15 @@ extern "C" { static void print_context(); }
 
 __BEGIN_SYS
 
+// static CPU::Reg a0;
+
 IC::Interrupt_Handler IC::_int_vector[IC::INTS];
 
 void IC::entry()
 {
     // Save context
     CPU::Context::push(true);
+
     ASM("       la     ra, 1f                   \n"     // set LR to restore context before returning
         "       j      %0                       \n" : : "i"(&dispatch));
 
@@ -35,14 +38,24 @@ void IC::entry()
 
 void IC::dispatch()
 {
-    Interrupt_Id id = int_id();
+    db<Init, IC>(TRC) << "IC_dispatch | " << CPU::id() << endl;
 
+    Interrupt_Id id = int_id();
+    // a0 = CPU::a0(); // exit passes status through a0
+    
     if((id != INT_SYS_TIMER) || Traits<IC>::hysterically_debugged)
         db<IC>(TRC) << "IC::dispatch(i=" << id << ")" << endl;
-
+   
     // MIP.MTI is a direct logic on (MTIME == MTIMECMP) and reseting the Timer seems to be the only way to clear it
-    if(id == INT_SYS_TIMER)
+    if(id == INT_SYS_TIMER) {
+        db<Init, IC>(TRC) << "Timer reset" << endl;
         Timer::reset();
+    }
+   
+    // Reset MSIP
+    if(id == INT_RESCHEDULER) {
+        IC::ipi_eoi(id);
+    }
 
     _int_vector[id](id);
 
@@ -118,7 +131,8 @@ void IC::exception(Interrupt_Id id)
     if(Traits<Build>::hysterically_debugged)
         Machine::panic();
 
-    CPU::fr(sizeof(void *)); // tell CPU::Context::pop(true) to perform PC = PC + [4|8] on return
+    CPU::fr(sizeof(long *)); // tell CPU::Context::pop(true) to perform PC = PC + [4|8] on return
+    while(true);
 }
 
 __END_SYS

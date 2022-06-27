@@ -1,0 +1,86 @@
+// EPOS ARMv7 PMU Events Declaration
+
+#include <architecture/pmu.h>
+
+#ifdef __riscv__
+
+__BEGIN_SYS
+
+RV64_PMU::Event RV64_PMU::_monitored_events[RV64_PMU::CHANNELS] = {
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+};
+
+const RV64_PMU::Event RV64_PMU::_events[RV64_PMU::EVENTS] = {
+
+    RV64_PMU::EXCEPTION_TAKEN                                 ,
+    RV64_PMU::INTEGER_LOAD_INSTRUCTION_RETIRED                ,
+    RV64_PMU::INTEGER_STORE_INSTRUCTION_RETIRED               ,
+    RV64_PMU::ATOMIC_MEMORY_OPERATION_RETIRED                 ,
+    RV64_PMU::SYSTEM_INSTRUCTION_RETIRED                      ,
+    RV64_PMU::INTEGER_ARITHMETIC_INSTRUCTION_RETIRED          ,
+    RV64_PMU::CONDITIONAL_BRANCH_RETIRED                      ,
+    RV64_PMU::JAL_INSTRUCTION_RETIRED                         ,
+    RV64_PMU::JALR_INSTRUCTION_RETIRED                        ,
+    RV64_PMU::INTEGER_MULTIPLICATION_INSTRUCTION_RETIRED      ,
+    RV64_PMU::INTEGER_DIVISION_INSTRUCTION_RETIRED            ,
+    RV64_PMU::FLOATING_POINT_LOAD_INSTRUCTION_RETIRED         ,
+    RV64_PMU::FLOATING_POINT_STORE_INSTRUCTION_RETIRED        ,
+    RV64_PMU::FLOATING_POINT_ADDITION_RETIRED                 ,
+    RV64_PMU::FLOATING_POINT_MULTIPLICATION_RETIRED           ,
+    RV64_PMU::FLOATING_POINT_FUSED_MULTIPLY_ADD_RETIRED       ,
+    RV64_PMU::FLOATING_POINT_DIVISION_OR_SQUARE_ROOT_RETIRED  ,
+    RV64_PMU::OTHER_FLOATING_POINT_INSTRUCTION_RETIRED        ,
+
+    RV64_PMU::LOAD_USE_INTERLOCK                  ,
+    RV64_PMU::LONG_LATENCY_INTERLOCK              ,
+    RV64_PMU::CSR_READ_INTERLOCK                  ,
+    RV64_PMU::INSTRUCTION_CACHE_ITIM_BUSY         ,
+    RV64_PMU::DATA_CACHE_DTIM_BUSY                ,
+    RV64_PMU::BRANCH_DIRECTION_MISPREDICTION      ,
+    RV64_PMU::BRANCH_JUMP_TARGET_MISPREDICTION    ,
+    RV64_PMU::PIPELINE_FLUSH_FROM_CSR_WRITE       ,
+    RV64_PMU::PIPELINE_FLUSH_FROM_OTHER_EVENT     ,
+    RV64_PMU::INTEGER_MULTIPLICATION_INTERLOCK    ,
+    RV64_PMU::FLOATING_POINT_INTERLOCK            ,
+
+    RV64_PMU::INSTRUCTION_CACHE_MISS                      ,
+    RV64_PMU::DATA_CACHE_MISS_OR_MEMORY_MAPPED_IO_ACCESS  ,
+    RV64_PMU::DATA_CACHE_WRITEBACK                        ,
+    RV64_PMU::INSTRUCTION_TLB_MISS                        ,
+    RV64_PMU::DATA_TLB_MISS
+};
+
+
+
+
+__END_SYS
+
+#endif

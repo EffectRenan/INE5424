@@ -22,8 +22,8 @@ install_kernel_$(MMOD): system_kernel_$(MMOD)
 		$(INSTALL) system_$(MMOD) $(IMG)
 		$(INSTALL) application_$(MMOD).o $(LIB)
 
-system_library_$(MMOD): system_scaffold.o application_scaffold.o flash_scaffold.o
-		$(LD) $(LDFLAGS) -i system_scaffold.o -o system_$(MMOD).o
+system_library_$(MMOD): system_scaffold.o application_scaffold.o flash_scaffold.o system_binding.o
+		$(LD) $(LDFLAGS) -i system_scaffold.o system_binding.o -o system_$(MMOD).o
 		$(INSTALL) application_scaffold.o application_$(MMOD).o
 		$(INSTALL) flash_scaffold.o flash_$(MMOD).o
 		
@@ -34,7 +34,7 @@ system_builtin_$(MMOD): $(OBJS)
 		--section-start $(MACH_DATA_NAME)=$(SYS_DATA_ADDR) \
 		--entry=_init -o system_$(MMOD) \
 		$(LIB)/crtbegin_$(MMOD).o \
-		system_scaffold.o \
+		system_scaffold.o system_binding.o \
 		$(LIB)/crtend_$(MMOD).o \
 		--whole-archive \
 		-l$(LSYS) -l$(LMACH) -l$(LARCH) \
@@ -48,7 +48,7 @@ system_kernel_$(MMOD): $(OBJS)
 		--section-start $(MACH_DATA_NAME)=$(SYS_DATA_ADDR) \
 		--entry=_init -o system_$(MMOD) \
 		$(LIB)/crtbegin_$(MMOD).o \
-		system_scaffold.o \
+		system_scaffold.o system_binding.o \
 		$(LIB)/crtend_$(MMOD).o \
 		--whole-archive \
 		-l$(LSYS) -l$(LMACH) -l$(LARCH) \

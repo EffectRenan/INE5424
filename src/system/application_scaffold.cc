@@ -1,6 +1,8 @@
 // EPOS Application Scaffold and Application Component Implementation
 
 #include <system.h>
+#include <architecture.h>
+#include <process.h>
 
 __BEGIN_SYS
 
@@ -9,6 +11,7 @@ char Application::_preheap[];
 Heap * Application::_heap;
 
 __END_SYS
+
 
 __BEGIN_API
 

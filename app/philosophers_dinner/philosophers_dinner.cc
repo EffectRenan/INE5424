@@ -16,7 +16,7 @@ Semaphore * chopstick[5];
 
 OStream cout;
 
-int philosopher(int n, int l, int c);
+int philosopher(int data[]);
 
 int main()
 {
@@ -28,11 +28,16 @@ int main()
     for(int i = 0; i < 5; i++)
         chopstick[i] = new Semaphore;
 
-    phil[0] = new Thread(&philosopher, 0,  5, 32);
-    phil[1] = new Thread(&philosopher, 1, 10, 44);
-    phil[2] = new Thread(&philosopher, 2, 16, 39);
-    phil[3] = new Thread(&philosopher, 3, 16, 24);
-    phil[4] = new Thread(&philosopher, 4, 10, 20);
+    int data[] = {0,  5, 32};
+    phil[0] = new Thread(&philosopher, data);
+    int data1[] = {1, 10, 44};
+    phil[1] = new Thread(&philosopher, data1);
+    int data2[] = {2, 16, 39};
+    phil[2] = new Thread(&philosopher, data2);
+    int data3[] = {3, 16, 24};
+    phil[3] = new Thread(&philosopher, data3);
+    int data4[] = {4, 10, 20};
+    phil[4] = new Thread(&philosopher, data4);
 
     cout << "Philosophers are alive and hungry!" << endl;
 
@@ -69,8 +74,11 @@ int main()
     return 0;
 }
 
-int philosopher(int n, int l, int c)
+int philosopher(int data[])
 {
+    int n = data[0];
+    int l = data[1];
+    int c = data[2];
     int first = (n < 4)? n : 0;
     int second = (n < 4)? n + 1 : 4;
 
