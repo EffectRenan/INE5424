@@ -395,6 +395,7 @@ public:
 
     static void satp(Reg r) { ASM("csrw satp, %0" : : "r"(r) : "cc"); }
     static Reg  satp() { Reg r; ASM("csrr %0, satp" :  "=r"(r) : : ); return r; }
+    static void wait() {}
 
 private:
     template<typename Head, typename ... Tail>
