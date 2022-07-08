@@ -103,6 +103,7 @@ class Priority;
 class FCFS;
 class RR;
 class MRR;
+class MW;
 class PP;
 class RM;
 class DM;

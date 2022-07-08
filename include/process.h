@@ -59,7 +59,14 @@ public:
         LOW     = Criterion::LOW,
         MAIN    = Criterion::MAIN,
         IDLE    = Criterion::IDLE,
-        IO      = Criterion::IO
+
+        // PP
+        IO      = Criterion::IO,
+
+        // Windows multicore
+        TIME_CRITICAL = Criterion::TIME_CRITICAL,
+        ABOVE_NORMAL = Criterion::ABOVE_NORMAL, 
+        BELOW_NORMAL = Criterion::BELOW_NORMAL
     };
 
     // Thread Queue

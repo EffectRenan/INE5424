@@ -23,6 +23,7 @@ class Scheduling_Criterion_Common
     friend class _SYS::Clerk<System>;         // for _statistics
 
 public:
+
     // Priorities
     enum : int {
         MAIN   = 0,
@@ -30,7 +31,12 @@ public:
         NORMAL = (unsigned(1) << (sizeof(int) * 8 - 1)) - 3,
         LOW    = (unsigned(1) << (sizeof(int) * 8 - 1)) - 2,
         IDLE   = (unsigned(1) << (sizeof(int) * 8 - 1)) - 1,
-        IO     = NORMAL - 1
+        IO     = NORMAL - 1,
+
+        // Windows multicore
+        TIME_CRITICAL = NORMAL,
+        ABOVE_NORMAL = NORMAL, 
+        BELOW_NORMAL = NORMAL
     };
 
     // Constructor helpers
@@ -93,6 +99,7 @@ public:
 
     bool collect(bool end = false) { return false; }
     bool charge(bool end = false) { return true; }
+    bool charge(int state) { return true; }
     bool award(bool end = false) { return true; }
 
     volatile Statistics & statistics() { return _statistics; }
@@ -176,6 +183,78 @@ public:
     static unsigned int current_head() { return CPU::id(); }
 };
 
+// Windows multicore
+class MW: public MRR 
+{
+public:
+
+    static const bool charging = true;
+
+    // Relative priorities used as index 
+    enum : int {
+        MAIN_PRIORITY   = 0,
+        IDLE_PRIORITY   = 1,
+        BELOW_PRIORITY  = 2,
+        NORMAL_PRIORITY = 3,
+        ABOVE_PRIORITY  = 4,
+        HIGH_PRIORITY   = 5,
+    };
+
+    // Priority classes used as index
+    enum : int {
+        MAIN            = 0,
+        IDLE            = 1,
+        LOWEST          = 2,
+        BELOW_NORMAL    = 3,
+        NORMAL          = 4,
+        ABOVE_NORMAL    = 5,
+        HIGHEST         = 6,
+        TIME_CRITICAL   = 7
+    };
+
+    enum {
+        QTT_CLASSES = 8,
+        QTT_PRIORITIES = 6,
+
+        MAX_CLASS = 7,
+        MAX_PRIORITY = 4
+    };
+
+public:
+
+    template <typename ... Tn>
+    MW(int p = NORMAL, int q = NORMAL_PRIORITY, Tn & ... an): MRR(p) {
+        _priority_class = p;
+        _priority_base = q;
+    }
+
+    bool charge(int state);
+    
+    int actual_priority(int priority);
+    
+    void decrease_priority();
+    void increase_priority();
+
+private:
+
+    int _priority_class;
+    int _priority_base;
+
+    int _priorities[QTT_CLASSES][QTT_PRIORITIES] = {
+
+        // main, idle, below, normal, above, high
+
+        {0, 0, 0, 0, 0, 0},          // main
+        {0, 1, 1, 1, 1, 1},          // idle
+        {0, 2, 4, 6, 8, 11},         // lowest 
+        {0, 3, 5, 7, 9, 12},         // below normal
+        {0, 4, 6, 8, 10, 13},        // normal
+        {0, 5, 7, 9, 11, 14},        // above normal
+        {0, 6, 8, 10, 12, 15},       // highest
+        {0, 15, 15, 15, 15, 15}      // time-critical
+    };
+};
+
 
 __END_SYS
 
@@ -184,6 +263,11 @@ __BEGIN_UTIL
 // MRR
 template<typename T>
 class Scheduling_Queue<T, MRR>:
+public Multihead_Scheduling_List<T> {};
+
+// MW 
+template<typename T>
+class Scheduling_Queue<T, MW>:
 public Multihead_Scheduling_List<T> {};
 
 __END_UTIL
