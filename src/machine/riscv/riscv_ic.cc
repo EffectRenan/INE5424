@@ -80,7 +80,7 @@ void IC::exception(Interrupt_Id id)
     CPU::Reg tval = CPU::mtval();
     Thread * thread = Thread::self();
 
-    db<IC,System>(WRN) << "IC::Exception(" << id << ") => {" << hex << "core=" << core << ",thread=" << thread << ",epc=" << epc << ",sp=" << sp << ",status=" << status << ",cause=" << cause << ",tval=" << tval << "}" << dec;
+    db<IC,System>(TRC) << "IC::Exception(" << id << ") => {" << hex << "core=" << core << ",thread=" << thread << ",epc=" << epc << ",sp=" << sp << ",status=" << status << ",cause=" << cause << ",tval=" << tval << "}" << dec;
 
     switch(id) {
     case 0: // unaligned instruction
