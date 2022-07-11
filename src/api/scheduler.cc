@@ -31,7 +31,8 @@ template MW::MW<>(int p, int q);
 
 bool MW::charge(int state) {
 
-    db<MW>(TRC) << "MW charge" << endl;
+    if (state != 0)
+        db<MW>(TRC) << "MW charge: " << state << endl;
 
     if (_priority_class != MAIN && _priority_class != IDLE) {
         db<MW>(TRC) << "class: " <<  _priority_class << " | priority: " << _priority_base << endl;

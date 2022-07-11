@@ -128,11 +128,11 @@ template<> struct Traits<Thread>: public Traits<Build>
     static const bool smp = Traits<System>::multicore;
     static const bool trace_idle = hysterically_debugged;
     static const bool simulate_capacity = false;
-
-    // typedef RR Criterion;
-    typedef MW Criterion;
     
-    static const unsigned int QUANTUM = 500000; // us
+    typedef MW Criterion;
+    // typedef RR Criterion;
+
+    static const unsigned int QUANTUM = 10000; // us
 };
 
 template<> struct Traits<Scheduler<Thread>>: public Traits<Build>

@@ -193,25 +193,13 @@ public:
     // Relative priorities used as index 
     enum : int {
         MAIN_PRIORITY   = 0,
-        IDLE_PRIORITY   = 1,
-        BELOW_PRIORITY  = 2,
+        HIGH_PRIORITY   = 1,
+        ABOVE_PRIORITY  = 2,
         NORMAL_PRIORITY = 3,
-        ABOVE_PRIORITY  = 4,
-        HIGH_PRIORITY   = 5,
+        BELOW_PRIORITY  = 4,
+        IDLE_PRIORITY   = 5,
     };
-
-    // Priority classes used as index
-    enum : int {
-        MAIN            = 0,
-        IDLE            = 1,
-        LOWEST          = 2,
-        BELOW_NORMAL    = 3,
-        NORMAL          = 4,
-        ABOVE_NORMAL    = 5,
-        HIGHEST         = 6,
-        TIME_CRITICAL   = 7
-    };
-
+    
     enum {
         QTT_CLASSES = 8,
         QTT_PRIORITIES = 6,
@@ -220,10 +208,30 @@ public:
         MAX_PRIORITY = 4
     };
 
+    // Priority classes used as index
+    enum : int {
+        MAIN            = 0,
+        TIME_CRITICAL   = 1,
+        HIGHEST         = 2,
+        ABOVE_NORMAL    = 3,
+        NORMAL          = 4,
+        BELOW_NORMAL    = 5,
+        LOWEST          = 6,
+        IDLE            = ((LOWEST + 1) + QTT_PRIORITIES) * IDLE_PRIORITY,
+    };
+
+
 public:
 
     template <typename ... Tn>
-    MW(int p = NORMAL, int q = NORMAL_PRIORITY, Tn & ... an): MRR(p) {
+    MW(int p = NORMAL, int q = NORMAL_PRIORITY, Tn & ... an) {
+        
+        if (p == MAIN || p == IDLE) {
+            _priority = p;
+        } else {
+            _priority = (p + QTT_PRIORITIES) * q; 
+        }
+
         _priority_class = p;
         _priority_base = q;
     }
