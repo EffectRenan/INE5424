@@ -80,60 +80,59 @@ void IC::exception(Interrupt_Id id)
     CPU::Reg tval = CPU::mtval();
     Thread * thread = Thread::self();
 
-    db<IC,System>(WRN) << "IC::Exception(" << id << ") => {" << hex << "core=" << core << ",thread=" << thread << ",epc=" << epc << ",sp=" << sp << ",status=" << status << ",cause=" << cause << ",tval=" << tval << "}" << dec;
-    if (id == 2 || id == 1)
-        return;
+    db<IC,System>(TRC) << "IC::Exception(" << id << ") => {" << hex << "core=" << core << ",thread=" << thread << ",epc=" << epc << ",sp=" << sp << ",status=" << status << ",cause=" << cause << ",tval=" << tval << "}" << dec;
 
     switch(id) {
     case 0: // unaligned instruction
-        db<IC, System>(WRN) << " => unaligned instruction";
+        db<IC, System>(TRC) << " => unaligned instruction";
         break;
     case 1: // instruction access failure
-        db<IC, System>(WRN) << " => instruction protection violation";
+        db<IC, System>(TRC) << " => instruction protection violation";
         break;
     case 2: // illegal instruction
-        db<IC, System>(WRN) << " => illegal instruction";
+        db<IC, System>(TRC) << " => illegal instruction";
         break;
     case 3: // break point
-        db<IC, System>(WRN) << " => break point";
+        db<IC, System>(TRC) << " => break point";
         break;
     case 4: // unaligned load address
-        db<IC, System>(WRN) << " => unaligned data read";
+        db<IC, System>(TRC) << " => unaligned data read";
         break;
     case 5: // load access failure
-        db<IC, System>(WRN) << " => data protection violation (read)";
+        db<IC, System>(TRC) << " => data protection violation (read)";
         break;
     case 6: // unaligned store address
-        db<IC, System>(WRN) << " => unaligned data write";
+        db<IC, System>(TRC) << " => unaligned data write";
         break;
     case 7: // store access failure
-        db<IC, System>(WRN) << " => data protection violation (write)";
+        db<IC, System>(TRC) << " => data protection violation (write)";
         break;
     case 8: // user-mode environment call
     case 9: // supervisor-mode environment call
     case 10: // reserved... not described
     case 11: // machine-mode environment call
-        db<IC, System>(WRN) << " => bad ecall";
+        db<IC, System>(TRC) << " => bad ecall";
         break;
     case 12: // Instruction Page Table failure
-        db<IC, System>(WRN) << " => page fault";
+        db<IC, System>(TRC) << " => page fault";
         break;
     case 13: // Load Page Table failure
     case 14: // reserved... not described
     case 15: // Store Page Table failure
-        db<IC, System>(WRN) << " => page table protection violation";
+        db<IC, System>(TRC) << " => page table protection violation";
         break;
     default:
         int_not(id);
         break;
     }
 
-    db<IC, System>(WRN) << endl;
+    db<IC, System>(TRC) << endl;
 
     if(Traits<Build>::hysterically_debugged)
         Machine::panic();
 
     CPU::fr(sizeof(long *)); // tell CPU::Context::pop(true) to perform PC = PC + [4|8] on return
+    while(true);
 }
 
 __END_SYS
