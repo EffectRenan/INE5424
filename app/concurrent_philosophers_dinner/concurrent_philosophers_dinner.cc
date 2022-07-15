@@ -1,6 +1,6 @@
-// EPOS Semaphore Component Test Program
+// EPOS Scheduler Test Program
 
-#include <machine/display.h>
+#include <machine.h>
 #include <time.h>
 #include <synchronizer.h>
 #include <process.h>
@@ -9,18 +9,21 @@ using namespace EPOS;
 
 const int iterations = 10;
 
-Mutex table;
+Semaphore table;
 
 Thread * phil[5];
 Semaphore * chopstick[5];
 
 OStream cout;
 
-int philosopher(int n, int l, int c);
+int philosopher(int data[]);
+void think(unsigned long long n);
+void eat(unsigned long long n);
+unsigned long long busy_wait(unsigned long long n);
 
 int main()
 {
-    table.lock();
+    table.p();
     Display::clear();
     Display::position(0, 0);
     cout << "The Philosopher's Dinner:" << endl;
@@ -28,11 +31,17 @@ int main()
     for(int i = 0; i < 5; i++)
         chopstick[i] = new Semaphore;
 
-    phil[0] = new Thread(&philosopher, 0,  5, 30);
-    phil[1] = new Thread(&philosopher, 1, 10, 44);
-    phil[2] = new Thread(&philosopher, 2, 16, 39);
-    phil[3] = new Thread(&philosopher, 3, 16, 21);
-    phil[4] = new Thread(&philosopher, 4, 10, 17);
+    int data[] = {0,  5, 30};
+    phil[0] = new Thread(&philosopher, data);
+    
+    int data1[] = {1, 10, 44};
+    phil[1] = new Thread(&philosopher, data1);
+    int data2[] = {2, 16, 39};
+    phil[2] = new Thread(&philosopher, data2);
+    int data3[] = {3, 16, 21};
+    phil[3] = new Thread(&philosopher, data3);
+    int data4[] = {4, 10, 17};
+    phil[4] = new Thread(&philosopher, data4);
 
     cout << "Philosophers are alive and hungry!" << endl;
 
@@ -49,14 +58,14 @@ int main()
     Display::position(19, 0);
 
     cout << "The dinner is served ..." << endl;
-    table.unlock();
+    table.v();
 
     for(int i = 0; i < 5; i++) {
         int ret = phil[i]->join();
-        table.lock();
+        table.p();
         Display::position(20 + i, 0);
         cout << "Philosopher " << i << " ate " << ret << " times " << endl;
-        table.unlock();
+        table.v();
     }
 
     for(int i = 0; i < 5; i++)
@@ -69,48 +78,67 @@ int main()
     return 0;
 }
 
-int philosopher(int n, int l, int c)
+int philosopher(int data[])
 {
+    int n = data[0];
+    int l = data[1];
+    int c = data[2];
     int first = (n < 4)? n : 0;
     int second = (n < 4)? n + 1 : 4;
 
     for(int i = iterations; i > 0; i--) {
 
-        table.lock();
+        table.p();
         Display::position(l, c);
         cout << "thinking[" << CPU::id() << "]";
-        table.unlock();
+        table.v();
 
-        Delay thinking(1000000);
+        think(1000000);
 
-        table.lock();
+        table.p();
         Display::position(l, c);
         cout << "  hungry[" << CPU::id() << "]";
-        table.unlock();
+        table.v();
 
         chopstick[first]->p();   // get first chopstick
         chopstick[second]->p();  // get second chopstick
 
-        table.lock();
+        table.p();
         Display::position(l, c);
         cout << " eating[" << CPU::id() << "] ";
-        table.unlock();
+        table.v();
 
-        Delay eating(500000);
+        eat(500000);
 
-        table.lock();
+        table.p();
         Display::position(l, c);
         cout << "    sate[" << CPU::id() << "]";
-        table.unlock();
+        table.v();
 
         chopstick[first]->v();   // release first chopstick
         chopstick[second]->v();  // release second chopstick
     }
 
-    table.lock();
+    table.p();
     Display::position(l, c);
     cout << "  done[" << CPU::id() << "]  ";
-    table.unlock();
+    table.v();
 
     return iterations;
+}
+
+void eat(unsigned long long n) {
+    busy_wait(n);
+}
+
+void think(unsigned long long n) {
+    busy_wait(n);
+}
+
+unsigned long long busy_wait(unsigned long long n)
+{
+    volatile unsigned long long v;
+    for(unsigned long long int j = 0; j < 20 * n; j++)
+        v &= 2 ^ j;
+    return v;
 }

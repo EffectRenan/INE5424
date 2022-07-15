@@ -372,6 +372,10 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
     if(charge) {
         if(Criterion::timed)
             _timer->restart();
+
+        if(Criterion::charging) {
+            prev->criterion().charge(prev->state());
+        }
     }
 
     if(prev != next) {

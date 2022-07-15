@@ -130,7 +130,7 @@ template<> struct Traits<Thread>: public Traits<Build>
     static const bool simulate_capacity = false;
 
     // typedef RR Criterion;
-    typedef MRR Criterion;
+    typedef MW Criterion;
     
     static const unsigned int QUANTUM = 500000; // us
 };
